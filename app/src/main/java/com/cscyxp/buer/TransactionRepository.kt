@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.ZoneId
+import java.util.Locale
 import kotlin.math.roundToInt
 
 object TransactionRepository {
@@ -22,12 +23,8 @@ object TransactionRepository {
                 }.map { (date, tsList) ->
                     DailyTransaction(
                         date = date,
-                        expense = tsList.filter { it.type == 0 }
-                            .sumOf { it.amount }
-                            .let { it * 100.0.roundToInt() / 100.0 }, // 保留2位小数 double计算结果会出现无限小数
-                        income = tsList.filter { it.type == 1 }
-                            .sumOf { it.amount }
-                            .let { it * 100.0.roundToInt() / 100.0 }, // 保留2位小数 double计算结果出现无限小数
+                        expense = String.format(Locale.getDefault(), "%.2f", tsList.filter { it.type == 0 }.sumOf { it.amount }), // 保留2位小数 double计算结果会出现无限小数
+                        income = String.format(Locale.getDefault(),"%.2f", tsList.filter { it.type == 1 }.sumOf { it.amount }), // 保留2位小数 double计算结果出现无限小数
                         transactions = tsList
                     )
                 }

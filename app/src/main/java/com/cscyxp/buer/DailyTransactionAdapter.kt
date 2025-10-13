@@ -25,8 +25,8 @@ class DailyTransactionAdapter(): BaseListAdapter<DailyTransaction, ItemDailyTran
         Log.i(TAG, "onBindViewHolder: $position" + " holder code: ${holder.hashCode()}")
         val dailyTransaction = getItem(position)
         holder.viewBinding.tvDate.text = dailyTransaction.date.format(DateTimeFormatter.ofPattern("MM月dd日 E", Locale.CHINA))
-        holder.viewBinding.tvIncomeValue.text = dailyTransaction.income.toString()
-        holder.viewBinding.tvExpenseValue.text = dailyTransaction.expense.toString()
+        holder.viewBinding.tvIncomeValue.text = dailyTransaction.income
+        holder.viewBinding.tvExpenseValue.text = dailyTransaction.expense
 
         val rv = holder.viewBinding.rvDailyTransactions
         if (rv.layoutManager == null) {
