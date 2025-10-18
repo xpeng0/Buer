@@ -9,10 +9,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.cscyxp.buer.databinding.FragmentHomeBinding
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 private const val TAG = "HomeFragment"
 class HomeFragment: Fragment() {
@@ -37,12 +39,14 @@ class HomeFragment: Fragment() {
         }
         // val adapter = DailyTransactionAdapter()
         binding.rvRecentTransactions.adapter = viewModel.adapter
+        binding.rvRecentTransactions.itemAnimator = NoFadeItemAnimator().apply {
+            supportsChangeAnimations = false
+        }
         lifecycleScope.launch {
             viewModel.dailyTransactions.collect { dailyTransactions ->
-                viewModel.adapter.submitList(dailyTransactions)
-                // rv显示后再滑动
-                binding.rvRecentTransactions.post {
-                    binding.rvRecentTransactions.scrollToPosition(0)
+                viewModel.adapter.submitList(dailyTransactions) {
+                    // rv显示后再滑动
+                    binding.rvRecentTransactions.smoothScrollToPosition(0)
                 }
             }
         }

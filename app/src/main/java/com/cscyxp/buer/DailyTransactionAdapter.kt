@@ -11,10 +11,7 @@ import java.util.Locale
 private const val TAG = "DailyTransactionAdapter"
 class DailyTransactionAdapter(): BaseListAdapter<DailyTransaction, ItemDailyTransactionBinding>(ItemDailyTransactionBinding::inflate,
     areItemsTheSame = {old, new ->
-        val same = old.date == new.date
-        Log.i(TAG, "old date: ${old.date}")
-        Log.i(TAG, "new date: ${new.date}")
-        same
+        old.date == new.date
     }
 ) {
 
