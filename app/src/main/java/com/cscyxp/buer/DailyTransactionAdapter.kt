@@ -22,10 +22,11 @@ class DailyTransactionAdapter(): BaseListAdapter<DailyTransaction, ItemDailyTran
         Log.i(TAG, "onBindViewHolder: $position" + " holder code: ${holder.hashCode()}")
         val dailyTransaction = getItem(position)
         holder.viewBinding.tvDate.text = dailyTransaction.date.format(DateTimeFormatter.ofPattern("MM月dd日 E", Locale.CHINA))
-        holder.viewBinding.tvIncomeValue.text = dailyTransaction.income
-        holder.viewBinding.tvExpenseValue.text = dailyTransaction.expense
+        holder.viewBinding.tvIncomeValue.text = String.format(Locale.getDefault(), "%.2f", dailyTransaction.income)
+        holder.viewBinding.tvExpenseValue.text = String.format(Locale.getDefault(), "%.2f", dailyTransaction.expense)
 
         val rv = holder.viewBinding.rvDailyTransactions
+        rv.itemAnimator = null
         if (rv.layoutManager == null) {
             Log.i(TAG, "设置内层rv layoutManager")
             rv.layoutManager = LinearLayoutManager(holder.itemView.context, LinearLayoutManager.VERTICAL, false)

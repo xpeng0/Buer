@@ -8,7 +8,7 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_bar"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="50dp"
         app:cardElevation="4dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -27,119 +27,152 @@
             android:layout_marginStart="60dp"
             android:text="不二记账"
             android:textColor="@color/black"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textStyle="bold" />
     </androidx.cardview.widget.CardView>
 
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cv_income"
-        android:layout_width="99dp"
-        android:layout_height="84dp"
-        android:layout_marginTop="24dp"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="4dp"
-        app:contentPadding="16dp"
-        app:layout_constraintEnd_toStartOf="@id/cv_expense"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cv_bar">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/cl_month_info"
+        app:layout_constraintTop_toBottomOf="@id/cv_bar"
+        android:paddingHorizontal="10dp"
+        android:layout_marginTop="10dp">
+        
+        
+        <com.google.android.material.imageview.ShapeableImageView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="21:9"
+            android:src="@drawable/bg_snow_mountain"
+            app:shapeAppearanceOverlay="@style/RoundedImageStyle"
+            app:layout_constraintTop_toTopOf="parent"
+            android:scaleType="centerCrop"/>
 
-        <TextView
-            android:id="@+id/tv_income"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="总收入"
-            android:textColor="@color/black"
-            android:textSize="12sp" />
+            android:layout_marginBottom="15dp"
+            android:paddingStart="20dp"
+            android:orientation="vertical"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tv_month"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="10月收支"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"/>
+
+                <TextView
+                    android:id="@+id/tv_category"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:text="全部类型"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"/>
+
+            </LinearLayout>
 
 
-        <TextView
-            android:id="@+id/tv_income_num"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="26dp"
-            android:text="¥8,500"
-            android:textColor="@color/black"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            <TextView
+                android:id="@+id/tv_expense"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:text="总支出"
+                android:textColor="@color/white_second"
+                android:textSize="12sp"/>
 
 
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cv_expense"
-        android:layout_width="99dp"
-        android:layout_height="84dp"
-        android:layout_marginTop="24dp"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="4dp"
-        app:contentPadding="16dp"
-        app:layout_constraintEnd_toStartOf="@id/cv_balance"
-        app:layout_constraintStart_toEndOf="@id/cv_income"
-        app:layout_constraintTop_toBottomOf="@id/cv_bar">
+            <TextView
+                android:id="@+id/tv_expense_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="0.00"
+                android:textColor="@color/white"
+                android:textSize="35sp"
+                android:textStyle="bold"/>
 
 
-        <TextView
-            android:id="@+id/tv_expense"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="总支出"
-            android:textColor="@color/black"
-            android:textSize="12sp" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tv_income"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="总收入"
+                    android:textColor="@color/white_second"
+                    android:textSize="12sp" />
 
 
-        <TextView
-            android:id="@+id/tv_expense_num"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="26dp"
-            android:text="¥2,500"
-            android:textColor="@color/black"
-            android:textSize="15sp"
-            android:textStyle="bold" />
-    </androidx.cardview.widget.CardView>
+                <TextView
+                    android:id="@+id/tv_income_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="0.00"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cv_balance"
-        android:layout_width="99dp"
-        android:layout_height="84dp"
-        android:layout_marginTop="24dp"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="4dp"
-        app:contentPadding="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/cv_expense"
-        app:layout_constraintTop_toBottomOf="@id/cv_bar">
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="12dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="10dp"
+                    android:background="@color/white_third"/>
 
-        <TextView
-            android:id="@+id/tv_balance"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="余额"
-            android:textColor="@color/black"
-            android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/tv_balance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="结余"
+                    android:textColor="@color/white_second"
+                    android:textSize="12sp" />
 
 
-        <TextView
-            android:id="@+id/tv_balance_num"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="26dp"
-            android:text="¥6,000"
-            android:textColor="@color/black"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_balance_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="0.00"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
 
-    </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <TextView
         android:id="@+id/tv_recent_transactions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="230dp"
         android:text="最近交易"
         android:textColor="@color/black"
         android:textSize="22sp"
@@ -149,25 +182,31 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_recent_transactions"
-        android:layout_width="350dp"
-        android:layout_height="500dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_recent_transactions" />
+        app:layout_constraintTop_toBottomOf="@id/tv_recent_transactions"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 
-    <com.google.android.material.button.MaterialButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/btn_add"
-        android:layout_width="350dp"
-        android:layout_height="55dp"
-        android:backgroundTint="#FF0000"
-        android:text="快速添加交易"
-        app:cornerRadius="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:backgroundTint="#70FF0000"
+        android:contentDescription="qq"
+        android:text="记一笔"
+        app:icon="@drawable/round_add_24"
+        app:iconTint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rv_recent_transactions" />
+        android:layout_marginBottom="30dp"
+        android:layout_marginEnd="30dp"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

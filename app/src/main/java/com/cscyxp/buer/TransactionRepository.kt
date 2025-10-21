@@ -4,10 +4,12 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
-import java.util.Locale
-import kotlin.math.roundToInt
+import java.time.ZoneOffset
+import kotlin.random.Random
 
 object TransactionRepository {
     private val transactionDao = AppDataBase.instance.transactionDao()
@@ -15,20 +17,27 @@ object TransactionRepository {
     val transactions = transactionDao.getAllTransactions()
 
     fun getDailyTransactionsFlow(): Flow<List<DailyTransaction>> {
+        return toDailyTransactionsFlow(transactionDao.getAllTransactions())
+    }
+
+    fun getDailyTransactionsFlowByFilter(startMonthTs: Long, endMonthTs: Long, categoryId: Long?): Flow<List<DailyTransaction>> {
+        return toDailyTransactionsFlow(transactionDao.getTransactions(startMonthTs, endMonthTs, categoryId))
+    }
+
+    private fun toDailyTransactionsFlow(transactionsFlow: Flow<List<Transaction>>): Flow<List<DailyTransaction>> {
         val zone = ZoneId.systemDefault()
-        return transactionDao.getAllTransactions()
-            .map { value: List<Transaction> ->
-                value.groupBy { ts ->
-                    Instant.ofEpochMilli(ts.date).atZone(zone).toLocalDate()
-                }.map { (date, tsList) ->
-                    DailyTransaction(
-                        date = date,
-                        expense = String.format(Locale.getDefault(), "%.2f", tsList.filter { it.type == 0 }.sumOf { it.amount }), // 保留2位小数 double计算结果会出现无限小数
-                        income = String.format(Locale.getDefault(),"%.2f", tsList.filter { it.type == 1 }.sumOf { it.amount }), // 保留2位小数 double计算结果出现无限小数
-                        transactions = tsList
-                    )
-                }
+        return transactionsFlow.map { value: List<Transaction> ->
+            value.groupBy { ts ->
+                Instant.ofEpochMilli(ts.date).atZone(zone).toLocalDate()
+            }.map { (date, tsList) ->
+                DailyTransaction(
+                    date = date,
+                    expense = tsList.filter { it.type == 0 }.map { BigDecimal.valueOf(it.amount) }.sumOf { it }, // double计算结果会出现精度丢失 转为BigDecimal
+                    income = tsList.filter { it.type == 1}.map { BigDecimal.valueOf(it.amount) }.sumOf { it }, // double计算结果会出现精度丢失 转为BigDecimal
+                    transactions = tsList
+                )
             }
+        }
     }
 
 
@@ -51,5 +60,28 @@ object TransactionRepository {
 
     suspend fun addTransaction(transaction: Transaction) {
         transactionDao.insert(transaction)
+    }
+
+    suspend fun addTransactions(transactions: List<Transaction>) {
+        transactionDao.insertList(transactions)
+    }
+
+
+    suspend fun addTestTransactions() {
+        val start = LocalDate.of(2025,1,1)
+            .atStartOfDay()
+            .toInstant(ZoneOffset.UTC)
+            .toEpochMilli()
+        val end = LocalDate.of(2025,10,18)
+            .atStartOfDay()
+            .toInstant(ZoneOffset.UTC)
+            .toEpochMilli()
+        addTransactions(List(1000) {
+            Transaction(
+                categoryId = Random.nextLong(1, 10),
+                amount = Random.nextDouble(1.00, 999.99),
+                date = Random.nextLong(start, end)
+            )
+        })
     }
 }

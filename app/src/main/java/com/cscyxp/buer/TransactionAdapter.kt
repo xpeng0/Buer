@@ -11,6 +11,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 class TransactionAdapter(
     private val onItemClick: (Transaction) -> Unit
@@ -32,7 +33,8 @@ class TransactionAdapter(
         holder.viewBinding.ivIcon.setImageResource(iconId)
         var type = "-"
         if (item.type == 1) type = "+"
-        holder.viewBinding.tvAmount.text = "${type}${item.amount}"
+        val amount = String.format(Locale.getDefault(), "%.2f", item.amount)
+        holder.viewBinding.tvAmount.text = "${type}$amount"
         holder.viewBinding.tvTime.text = DateTimeFormatter.ofPattern("HH:mm")
             .withZone(ZoneId.systemDefault())
             .format(Instant.ofEpochMilli(item.date))
