@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
     implementation(libs.gson)
+    implementation (project(":xpviews"))
 
     // 如果要在 Activity / Fragment 中用 viewModels() 这种 Kotlin 扩展
     implementation (libs.androidx.activity.ktx)

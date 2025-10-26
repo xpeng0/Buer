@@ -9,4 +9,43 @@
     <color name="white">#FFFFFFFF</color>
     <color name="white_second">#CCFFFFFF</color>
     <color name="white_third">#50FFFFFF</color>
+
+
+
+    <!-- Theme Colors -->
+    <!-- Primary -->
+    <color name="colorPrimary">#2962FF</color>
+    <color name="colorPrimaryVariant">#0039CB</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+
+    <!-- Secondary -->
+    <color name="colorSecondary">#FF6D00</color>
+    <color name="colorSecondaryVariant">#C43E00</color>
+    <color name="colorOnSecondary">#FFFFFF</color>
+
+    <!-- Background & Surface -->
+    <color name="colorBackground">#FFFFFF</color>
+    <color name="colorOnBackground">#000000</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorOnSurface">#000000</color>
+
+    <!-- Error -->
+    <color name="colorWarning">#FFA000</color>
+    <color name="colorSuccess">#4CAF50</color>
+    <color name="colorError">#B00020</color>
+    <color name="colorOnError">#FFFFFF</color>
+
+    <color name="colorPrimaryLight">#768FFF</color>
+    <color name="colorPrimaryDark">#0039CB</color>
+    <color name="colorAccent">#FF4081</color>
+
+
+    <!-- Text Colors -->
+    <color name="textPrimary">#212121</color>
+    <color name="textSecondary">#757575</color>
+
+    <!-- Divider -->
+    <color name="colorDivider">#E0E0E0</color>
+
+
 </resources>

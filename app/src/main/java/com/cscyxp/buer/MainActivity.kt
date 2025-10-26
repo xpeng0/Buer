@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.findNavController
+import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cscyxp.buer.databinding.ActivityMainBinding
 
@@ -29,6 +30,11 @@ class MainActivity: AppCompatActivity() {
             insets
         }
         setContentView(binding.root)
+        binding.bottomNav.apply {
+            post {
+                setupWithNavController(findNavController(R.id.nav_host_fragment))
+            }
+        }
 //        val adapter = TransactionAdapter {}
 //        binding.rvRecentTransactions.adapter = adapter
 //        binding.rvRecentTransactions.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
