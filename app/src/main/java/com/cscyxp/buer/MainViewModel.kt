@@ -18,7 +18,7 @@ class MainViewModel: ViewModel() {
     val adapter by lazy { DailyTransactionAdapter() }
 
     // 当前选中的月份
-    private val filter = MutableStateFlow(TransactionFilter(10))
+    val filter = MutableStateFlow(TransactionFilter(LocalDate.now().monthValue))
 
     // 根据月份动态切换查询 Flow
     val dailyTransactions = filter.flatMapLatest { filter ->
@@ -33,7 +33,7 @@ class MainViewModel: ViewModel() {
             .atStartOfDay(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
-        TransactionRepository.getDailyTransactionsFlowByFilter(startMonthTs, endMonthTs, filter.categoryId) // 返回 Flow<List<Record>>
+        TransactionRepository.getDailyTransactionsFlowByFilter(startMonthTs, endMonthTs, filter.category?.id) // 返回 Flow<List<Record>>
     }
 
     fun setMonth(month: Int) {
@@ -46,14 +46,14 @@ class MainViewModel: ViewModel() {
         return filter.value.month
     }
 
-    fun setCategory(categoryId: Long) {
+    fun setCategory(category: Category) {
         filter.value = filter.value.copy(
-            categoryId = categoryId
+            category = category
         )
     }
 
-    fun getCategoryId(): Long? {
-        return filter.value.categoryId
+    fun getCategory(): Category? {
+        return filter.value.category
     }
 
     fun addTransaction(transaction: Transaction) {

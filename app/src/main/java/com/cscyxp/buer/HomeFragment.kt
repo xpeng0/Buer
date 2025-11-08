@@ -67,17 +67,26 @@ class HomeFragment: Fragment() {
         binding.rvRecentTransactions.adapter = viewModel.adapter
         binding.rvRecentTransactions.itemAnimator = null
         lifecycleScope.launch {
-            viewModel.dailyTransactions.collect { dailyTransactions ->
-                viewModel.adapter.submitList(dailyTransactions) {
-                    // rv显示后再滑动
-                    binding.rvRecentTransactions.smoothScrollToPosition(0)
-                }
+            launch {
+                viewModel.dailyTransactions.collect { dailyTransactions ->
+                    viewModel.adapter.submitList(dailyTransactions) {
+                        // rv显示后再滑动
+                        binding.rvRecentTransactions.smoothScrollToPosition(0)
+                    }
 
-                val expense = dailyTransactions.sumOf { it.expense }
-                val income = dailyTransactions.sumOf { it.income }
-                binding.tvExpenseValue.text = String.format(Locale.getDefault(), "%.2f", expense)
-                binding.tvIncomeValue.text = String.format(Locale.getDefault(), "%.2f", income)
-                binding.tvBalanceValue.text = String.format(Locale.getDefault(), "%.2f", income - expense)
+                    val expense = dailyTransactions.sumOf { it.expense }
+                    val income = dailyTransactions.sumOf { it.income }
+                    binding.tvExpenseValue.text = String.format(Locale.getDefault(), "%.2f", expense)
+                    binding.tvIncomeValue.text = String.format(Locale.getDefault(), "%.2f", income)
+                    binding.tvBalanceValue.text = String.format(Locale.getDefault(), "%.2f", income - expense)
+                }
+            }
+
+            launch {
+                viewModel.filter.collect {
+                    binding.tvMonth.text = it.month.toString() + "月收支"
+                    binding.tvCategory.text = it.category?.name ?: "全部类型"
+                }
             }
         }
         binding.rvRecentTransactions.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
@@ -105,7 +114,6 @@ class HomeFragment: Fragment() {
         monthPickerBinding.btnConfirm.setOnClickListener {
             val month = monthPickerBinding.npMonth.value
             viewModel.setMonth(month)
-            binding.tvMonth.text = "${month}月收支"
             dialog.dismiss()
         }
         monthPickerBinding.btnCancel.setOnClickListener {
@@ -122,8 +130,7 @@ class HomeFragment: Fragment() {
 
         val adapter = CategoryGridAdapter { adapter, position ->
             val category = adapter.currentList[position]
-            viewModel.setCategory(category.id)
-            binding.tvCategory.text = category.name
+            viewModel.setCategory(category)
             categoryPickerDialog.dismiss()
         }
         adapter.submitList(TransactionRepository.categories.take(10))

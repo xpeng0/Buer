@@ -3,6 +3,7 @@ package com.cscyxp.buer
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -19,6 +20,7 @@ private const val TAG = "MainActivity"
 class MainActivity: AppCompatActivity() {
     private lateinit var binding :ActivityMainBinding
     private val viewModel: MainViewModel by viewModels()
+    private val topFragmentIds: MutableSet<Int> = mutableSetOf(R.id.homeFragment, R.id.chartFragment)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,23 +34,20 @@ class MainActivity: AppCompatActivity() {
         setContentView(binding.root)
         binding.bottomNav.apply {
             post {
-                setupWithNavController(findNavController(R.id.nav_host_fragment))
+                // 不放在post中 findNavController(R.id.nav_host_fragment)会为空
+                val navController = findNavController(R.id.nav_host_fragment)
+                navController.addOnDestinationChangedListener {_, destination, _ ->
+                    binding.bottomNav.post {
+                        if (destination.id in topFragmentIds) {
+                            binding.bottomNav.visibility = View.VISIBLE
+                        } else {
+                            binding.bottomNav.visibility = View.INVISIBLE
+                        }
+                    }
+                }
+                setupWithNavController(navController)
             }
         }
-//        val adapter = TransactionAdapter {}
-//        binding.rvRecentTransactions.adapter = adapter
-//        binding.rvRecentTransactions.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-//        viewModel.transactions.observe(this) { transitions ->
-//            Log.d(TAG, "observe: ")
-//            adapter.submitList(transitions) {
-//                binding.rvRecentTransactions.scrollToPosition(0)
-//            }
-//        }
-//        binding.btnAdd.setOnClickListener {
-//            // viewModel.addTransaction(Transaction(1, "新交易", amount = 12.00))
-//            Log.d(TAG, "click add: ")
-//            findNavController(R.id.nav_host_fragment).navigate(R.id.action_homeFragment_to_detailFragment)
-//        }
     }
 
 
