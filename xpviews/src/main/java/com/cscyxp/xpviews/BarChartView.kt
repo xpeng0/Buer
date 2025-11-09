@@ -30,20 +30,30 @@ class BarChartView @JvmOverloads constructor(
         style = Paint.Style.FILL
         isAntiAlias = true
     }
+    private val amountPaint = Paint().apply {
+        style = Paint.Style.FILL
+        isAntiAlias = true
+    }
     private val defaultBarWidth = 20.dp
 
-    private var availableLeft = left - paddingLeft
-    private var availableRight = right - paddingRight
-    private var availableTop = left - paddingTop
-    private var availableBottom = right - paddingBottom
-    private val availableWidth get() = availableRight - availableLeft
-    private val availableHeight get() = availableBottom - availableTop
+    private val availableWidth get() = width - paddingLeft - paddingRight
+    private val availableHeight get() = height - paddingBottom - paddingTop
     private val rectF = RectF()
     private var barWidth = 0f
     private var barHeightDensity = 0f
-    private var barBottom = bottom - height * 0.95f
+    // 总空隙数
+    val gapSize get() = data.size + 1
     // 空隙与宽度比例
-    private var gapRatio = 1f
+    private var gapRatio = 1.5f
+    // 字体高度
+    private val textHeight get() = textPaint.fontMetrics.descent - textPaint.fontMetrics.ascent
+    // 字体与bar空隙
+    private val textSpace = 15f
+    // 数字高度
+    private val amountHeight get() = amountPaint.fontMetrics.descent - amountPaint.fontMetrics.ascent
+    // 字体与bar空隙
+    private val amountSpace = 25f
+    private val barBottom get() = availableHeight - textHeight - textSpace
 
     init {
         // 初始化逻辑，比如读取自定义属性
@@ -55,6 +65,8 @@ class BarChartView @JvmOverloads constructor(
         context.withStyledAttributes(attrs, R.styleable.BarChartView) {
             barPaint.color = getColor(R.styleable.BarChartView_barColor, Color.BLUE)
             textPaint.color = getColor(R.styleable.BarChartView_textColor, Color.BLACK)
+            textPaint.textSize = getDimension(R.styleable.BarChartView_textSize, 30f)
+            amountPaint.textSize = getDimension(R.styleable.BarChartView_amountSize, 22f)
         }
     }
 
@@ -65,8 +77,8 @@ class BarChartView @JvmOverloads constructor(
 
     private var data: List<BarEntry> = let{
         if (isInEditMode) {
-            List(5) {
-                BarEntry("aa", (it + 1) * 200f)
+            List(6) {
+                BarEntry((it + 1).toString() + "月", (it + 1) * 200f)
             }
         } else {
             emptyList()
@@ -75,7 +87,13 @@ class BarChartView @JvmOverloads constructor(
 
     fun setData(data: List<BarEntry>) {
         this.data = data
-        invalidate() // 重新绘制
+        Log.d(TAG, "setData: $data")
+        // 重新计算尺寸bar宽度
+        barWidth = availableWidth / (data.size + gapSize * gapRatio)
+        // 重新计算单位高度密度
+        val barHeightTotal = availableHeight - textHeight - textSpace - amountHeight - amountSpace
+        barHeightDensity = barHeightTotal / (data.maxByOrNull { it.value }?.value ?: 1f)
+        requestLayout() // 不能仅invalidate重新布局。还要重新测量(wrap_content下，宽高由data size决定)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -84,7 +102,7 @@ class BarChartView @JvmOverloads constructor(
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
-        val viewWidth = (defaultBarWidth * (data.size + gapRatio * (data.size - 1))).toInt()
+        val viewWidth = (defaultBarWidth * (data.size + gapRatio * (data.size + 1))).toInt()
         val defaultWidth =  viewWidth + paddingLeft + paddingRight
         val measuredWidth = when (widthMode) {
             MeasureSpec.EXACTLY -> widthSize
@@ -107,10 +125,10 @@ class BarChartView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         // 根据 data 绘制柱状图
-        var barLeft = availableLeft.toFloat()
+        var barLeft = paddingLeft + barWidth * gapRatio
         data.forEach {
             var barHeight = barHeightDensity * it.value
-            if (enableAnimator) {
+            if (enableAnimator and !isInEditMode) {
                 barHeight *= progress
             }
             val barTop = barBottom - barHeight
@@ -121,14 +139,13 @@ class BarChartView @JvmOverloads constructor(
                 barBottom
             )
             canvas.drawRect(rectF, barPaint)
-            textPaint.textSize = availableHeight * 0.05f
             var textWidth = textPaint.measureText(it.label)
             var textOffset = (barWidth - textWidth) / 2f
-            canvas.drawText(it.label, barLeft + textOffset, availableBottom.toFloat(), textPaint)
-            textPaint.textSize = availableHeight * 0.03f
-            textWidth = textPaint.measureText(it.value.toString())
+            canvas.drawText(it.label, barLeft + textOffset, height - paddingBottom - textPaint.fontMetrics.descent, textPaint)
+            val amountStr = "%.2f".format(it.value)
+            textWidth = amountPaint.measureText(amountStr)
             textOffset = (barWidth - textWidth) / 2f
-            canvas.drawText(it.value.toString(), barLeft + textOffset, barTop - availableHeight * 0.02f, textPaint)
+            canvas.drawText(amountStr, barLeft + textOffset, barTop - amountSpace, amountPaint)
             barLeft += barWidth
             barLeft += barWidth * gapRatio
         }
@@ -136,24 +153,19 @@ class BarChartView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        availableLeft = left + paddingLeft
-        availableRight = right - paddingRight
-        availableTop = top + paddingTop
-        availableBottom = bottom - paddingBottom
-        // 总空隙数
-        val gapSize = data.size - 1
         // 计算柱子宽度
         barWidth = availableWidth / (data.size + gapSize * gapRatio)
         // 计算柱子高度密度
-        val barHeightTotal = availableHeight * 0.9f
+        val barHeightTotal = availableHeight - textHeight - textSpace - amountHeight - amountSpace
         barHeightDensity = barHeightTotal / (data.maxByOrNull { it.value }?.value ?: 1f)
-        barBottom = availableBottom * 0.95f
         log()
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        startAnimator()
+        if (enableAnimator) {
+            startAnimator()
+        }
     }
 
     fun log(){

@@ -1,5 +1,6 @@
 package com.cscyxp.buer
 
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
@@ -11,6 +12,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import kotlin.random.Random
 
+private const val TAG = "TransactionRepository"
 object TransactionRepository {
     private val transactionDao = AppDataBase.instance.transactionDao()
 
