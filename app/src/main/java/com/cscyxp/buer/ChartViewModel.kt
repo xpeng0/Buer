@@ -3,6 +3,7 @@ package com.cscyxp.buer
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.cscyxp.xpviews.BarChartView
+import com.cscyxp.xpviews.PieChartView
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -38,6 +39,7 @@ class ChartViewModel: ViewModel() {
         val endMonth = LocalDate.now().monthValue
         val startMonthTs = LocalDate.now()
             .minusMonths(5)
+            .withDayOfMonth(1)
             .atStartOfDay(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
@@ -54,5 +56,35 @@ class ChartViewModel: ViewModel() {
                 }
                 barEntries
             }
+    }
+
+    val currentMonthPieEntry = let {
+        val startTs = LocalDate.now()
+            .minusMonths(1)
+            .withDayOfMonth(1)
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+
+        val endTs = LocalDate.now()
+            .withDayOfMonth(1)
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+
+        TransactionRepository.getTransactionsFlowByFilter(startTs, endTs, null)
+            .map { transactions ->
+                transactions.groupBy {
+                    it.categoryId
+                }.map { (categoryId, transactions) ->
+                    PieChartView.PieEntry(
+                        TransactionRepository.categories.find { it.id == categoryId }?.name ?: "空",
+                        transactions.sumOf { it.amount }
+                    )
+                }.sortedBy {
+                    -it.value
+                }
+            }
+
     }
 }

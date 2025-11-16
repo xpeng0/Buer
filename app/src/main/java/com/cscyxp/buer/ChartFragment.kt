@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.cscyxp.buer.databinding.FragmentChartBinding
 import com.cscyxp.xpviews.BarChartView
+import com.cscyxp.xpviews.PieChartView.PieEntry
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
 
@@ -38,6 +39,15 @@ class ChartFragment: Fragment() {
                     binding.bc.setData(barEntries)
                 }
             }
+
+            launch {
+                viewModel.currentMonthPieEntry.collect { pieEntries ->
+                    Log.i(TAG, "on currentMonthPieEntry Collected ---- pieEntries: $pieEntries")
+                    binding.pc.setData(pieEntries)
+                }
+            }
         }
+
+
     }
 }

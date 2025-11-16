@@ -22,6 +22,10 @@ object TransactionRepository {
         return toDailyTransactionsFlow(transactionDao.getAllTransactions())
     }
 
+    fun getTransactionsFlowByFilter(startMonthTs: Long, endMonthTs: Long, categoryId: Long?): Flow<List<Transaction>> {
+        return transactionDao.getTransactions(startMonthTs, endMonthTs, categoryId)
+    }
+
     fun getDailyTransactionsFlowByFilter(startMonthTs: Long, endMonthTs: Long, categoryId: Long?): Flow<List<DailyTransaction>> {
         return toDailyTransactionsFlow(transactionDao.getTransactions(startMonthTs, endMonthTs, categoryId))
     }
