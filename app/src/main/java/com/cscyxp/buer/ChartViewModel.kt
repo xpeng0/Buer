@@ -19,19 +19,18 @@ class ChartViewModel: ViewModel() {
     val filter = MutableStateFlow(TransactionFilter(LocalDate.now().monthValue))
 
     // 根据月份动态切换查询 Flow
-    val dailyTransactions = filter.flatMapLatest { filter ->
+    val filterMonthTransactions = filter.flatMapLatest { filter ->
         val startMonthTs = LocalDate.of(2025, filter.month, 1)
             .atStartOfDay(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
 
-        val lastDay = YearMonth.of(2025, filter.month).lengthOfMonth()
-        val endMonthTs = LocalDate.of(2025, filter.month, lastDay)
-            .plusDays(1)
+        val endMonthTs = LocalDate.of(2025, filter.month, 1)
+            .plusMonths(1)
             .atStartOfDay(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
-        TransactionRepository.getDailyTransactionsFlowByFilter(startMonthTs, endMonthTs, filter.category?.id) // 返回 Flow<List<Record>>
+        TransactionRepository.getTransactionsFlowByFilter(startMonthTs, endMonthTs, filter.category?.id) // 返回 Flow<List<Record>>
     }
 
     val recentSixMonthBarEntry = let {
@@ -58,33 +57,45 @@ class ChartViewModel: ViewModel() {
             }
     }
 
-    val currentMonthPieEntry = let {
-        val startTs = LocalDate.now()
-            .minusMonths(1)
-            .withDayOfMonth(1)
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli()
+    suspend fun toPieEntry(transactions: List<Transaction>): List<PieChartView.PieEntry> {
+        return transactions.groupBy {
+            it.categoryId
+        }.map { (categoryId, transactions) ->
+            PieChartView.PieEntry(
+                TransactionRepository.categories.find { it.id == categoryId }?.name ?: "空",
+                transactions.sumOf { it.amount }
+            )
+        }.sortedBy {
+            -it.value
+        }
 
-        val endTs = LocalDate.now()
-            .withDayOfMonth(1)
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli()
+    }
 
-        TransactionRepository.getTransactionsFlowByFilter(startTs, endTs, null)
-            .map { transactions ->
-                transactions.groupBy {
-                    it.categoryId
-                }.map { (categoryId, transactions) ->
-                    PieChartView.PieEntry(
-                        TransactionRepository.categories.find { it.id == categoryId }?.name ?: "空",
-                        transactions.sumOf { it.amount }
-                    )
-                }.sortedBy {
-                    -it.value
-                }
-            }
+    suspend fun toCategoryChart(transactions: List<Transaction>): List<CategoryChart> {
+        val max = transactions.groupBy { it.categoryId }.maxOfOrNull { it.value.sumOf { it.amount } }
+        if (max == null) return emptyList()
+        return transactions.groupBy {
+            it.categoryId
+        }.map { (categoryId, transactions) ->
+            CategoryChart(
+                TransactionRepository.categories.find { it.id == categoryId } ?: Category(0, "", 0, ""),
+                value = transactions.sumOf { it.amount },
+                progress = Math.round(transactions.sumOf { it.amount } * 100 / max).toInt()
+            )
+        }.sortedBy {
+            -it.value
+        }
+    }
 
+    val chartUIState = let {
+        filterMonthTransactions.map { transactions ->
+            toPieEntry(transactions) to toCategoryChart(transactions)
+        }
+    }
+
+    fun setMonth(month: Int) {
+        filter.value = filter.value.copy(
+            month = month
+        )
     }
 }

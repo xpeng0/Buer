@@ -41,7 +41,7 @@ class MainActivity: AppCompatActivity() {
                         if (destination.id in topFragmentIds) {
                             binding.bottomNav.visibility = View.VISIBLE
                         } else {
-                            binding.bottomNav.visibility = View.INVISIBLE
+                            binding.bottomNav.visibility = View.GONE
                         }
                     }
                 }

@@ -9,10 +9,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.cscyxp.buer.databinding.FragmentChartBinding
 import com.cscyxp.xpviews.BarChartView
 import com.cscyxp.xpviews.PieChartView.PieEntry
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private const val TAG = "ChartFragment"
@@ -32,6 +34,17 @@ class ChartFragment: Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        binding.bc.onBarClickListener = { index, barEntry ->
+            Log.i(TAG, "onBarClick index $index")
+            val month = LocalDate.now().monthValue
+            // index是
+            viewModel.setMonth(month + index - 5)
+
+        }
+        val categoryChartAdapter = CategoryChartAdapter()
+        binding.rvCategoryChart.itemAnimator = null
+        binding.rvCategoryChart.adapter = categoryChartAdapter
+        binding.rvCategoryChart.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         lifecycleScope.launch {
             launch {
                 viewModel.recentSixMonthBarEntry.collect { barEntries ->
@@ -41,9 +54,10 @@ class ChartFragment: Fragment() {
             }
 
             launch {
-                viewModel.currentMonthPieEntry.collect { pieEntries ->
-                    Log.i(TAG, "on currentMonthPieEntry Collected ---- pieEntries: $pieEntries")
-                    binding.pc.setData(pieEntries)
+                viewModel.chartUIState.collect { chartUIState ->
+                    Log.i(TAG, "on filterMonthTransactions Collected ---- chartUIState: $chartUIState")
+                    binding.pc.setData(chartUIState.first)
+                    categoryChartAdapter.submitList(chartUIState.second)
                 }
             }
         }

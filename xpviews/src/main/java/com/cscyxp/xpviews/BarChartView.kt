@@ -8,11 +8,13 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import androidx.core.animation.addListener
 import kotlin.math.min
 import androidx.core.content.withStyledAttributes
+import kotlin.math.sqrt
 
 private const val TAG = "BarChartView"
 class BarChartView @JvmOverloads constructor(
@@ -85,15 +87,33 @@ class BarChartView @JvmOverloads constructor(
         }
     }
 
+    private var rectFs = data.map { RectF() }
+
     fun setData(data: List<BarEntry>) {
-        this.data = data
         Log.d(TAG, "setData: $data")
+        this.data = data
+        sqrtOptimize()
+        rectFs = data.map { RectF() }
+        clickIndex = data.size - 1
         // 重新计算尺寸bar宽度
         barWidth = availableWidth / (data.size + gapSize * gapRatio)
         // 重新计算单位高度密度
         val barHeightTotal = availableHeight - textHeight - textSpace - amountHeight - amountSpace
-        barHeightDensity = barHeightTotal / (data.maxByOrNull { it.value }?.value ?: 1f)
+        barHeightDensity = barHeightTotal / (optimizedData.maxOrNull() ?: 1f)
         requestLayout() // 不能仅invalidate重新布局。还要重新测量(wrap_content下，宽高由data size决定)
+    }
+
+    private var optimizedData = data.map { it.value }
+    /**
+     * 平方根缩放
+     */
+    private fun sqrtOptimize() {
+        if (data.isEmpty()) return
+        optimizedData = data.map { it.value }
+        val min = optimizedData.filter { it.toInt() != 0 }.minOrNull() ?: 0f
+        if (optimizedData.max() / min > 5) {
+            optimizedData = optimizedData.map { sqrt(it) }
+        }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -111,7 +131,7 @@ class BarChartView @JvmOverloads constructor(
             else -> defaultWidth
         }
 
-        val defaultHeight = (viewWidth * 0.8 + paddingTop + paddingBottom).toInt()
+        val defaultHeight = (viewWidth * 0.65 + paddingTop + paddingBottom).toInt()
         val measuredHeight = when (heightMode) {
             MeasureSpec.EXACTLY -> heightSize
             MeasureSpec.AT_MOST -> min(heightSize, defaultHeight)
@@ -126,8 +146,8 @@ class BarChartView @JvmOverloads constructor(
         super.onDraw(canvas)
         // 根据 data 绘制柱状图
         var barLeft = paddingLeft + barWidth * gapRatio
-        data.forEach {
-            var barHeight = barHeightDensity * it.value
+        data.forEachIndexed { i, barEntry ->
+            var barHeight = barHeightDensity * optimizedData[i]
             if (enableAnimator and !isInEditMode) {
                 barHeight *= progress
             }
@@ -138,11 +158,17 @@ class BarChartView @JvmOverloads constructor(
                 barLeft + barWidth,
                 barBottom
             )
+            rectFs[i].set(rectF)
+            if (i == clickIndex) {
+                barPaint.color = barPaint.color and 0x00ffffff or (255 shl 24)
+            } else {
+                barPaint.color = barPaint.color and 0x00ffffff or (100 shl 24)
+            }
             canvas.drawRect(rectF, barPaint)
-            var textWidth = textPaint.measureText(it.label)
+            var textWidth = textPaint.measureText(barEntry.label)
             var textOffset = (barWidth - textWidth) / 2f
-            canvas.drawText(it.label, barLeft + textOffset, height - paddingBottom - textPaint.fontMetrics.descent, textPaint)
-            val amountStr = "%.2f".format(it.value)
+            canvas.drawText(barEntry.label, barLeft + textOffset, height - paddingBottom - textPaint.fontMetrics.descent, textPaint)
+            val amountStr = "%.2f".format(barEntry.value)
             textWidth = amountPaint.measureText(amountStr)
             textOffset = (barWidth - textWidth) / 2f
             canvas.drawText(amountStr, barLeft + textOffset, barTop - amountSpace, amountPaint)
@@ -157,7 +183,7 @@ class BarChartView @JvmOverloads constructor(
         barWidth = availableWidth / (data.size + gapSize * gapRatio)
         // 计算柱子高度密度
         val barHeightTotal = availableHeight - textHeight - textSpace - amountHeight - amountSpace
-        barHeightDensity = barHeightTotal / (data.maxByOrNull { it.value }?.value ?: 1f)
+        barHeightDensity = barHeightTotal / (optimizedData.maxOrNull() ?: 1f)
         log()
     }
 
@@ -199,5 +225,28 @@ class BarChartView @JvmOverloads constructor(
         }
     }
 
+    var onBarClickListener: (Int, BarEntry) -> Unit = { index, barEntry ->
+        Log.i(TAG, "onBarClickListener: index $index")
+    }
 
+    private var clickIndex = data.size - 1
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        Log.d(TAG, "onTouchEvent: event: $event")
+        Log.d(TAG, "onTouchEvent: rectFs: $rectFs")
+        // 处理点击事件
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> return true
+            MotionEvent.ACTION_UP -> {
+                rectFs.forEachIndexed { i, rectF ->
+                    if (rectF.contains(event.x, event.y)) {
+                        onBarClickListener(i, data[i])
+                        clickIndex = i
+                        invalidate()
+                    }
+                }
+            }
+        }
+        return super.onTouchEvent(event)
+    }
 }

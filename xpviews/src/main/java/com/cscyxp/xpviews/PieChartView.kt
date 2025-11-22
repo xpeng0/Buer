@@ -185,7 +185,7 @@ class PieChartView @JvmOverloads constructor(
         minAngleCompensation()
         Log.i(TAG, "data: ${this.data.map { it.value }}")
         Log.i(TAG, "optimizedData: $optimizedData")
-        invalidate()
+        startAnimator()
     }
 
 
@@ -193,13 +193,14 @@ class PieChartView @JvmOverloads constructor(
      * 平方根缩放
      */
     private fun sqrtOptimize() {
+        if (data.isEmpty()) return
         optimizedData = data.map { it.value }
-        if (optimizedData.max() / optimizedData.min() > 50) {
+        if (optimizedData.max() / optimizedData.min() > 100) {
             optimizedData = optimizedData.map { sqrt(it) }
         }
     }
 
-    val minAngle = 20f
+    val minAngle = 18f
     /**
      * 最小角度补偿(基于超额比例)
      */
