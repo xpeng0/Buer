@@ -55,11 +55,4 @@ class MainViewModel: ViewModel() {
     fun getCategory(): Category? {
         return filter.value.category
     }
-
-    fun addTransaction(transaction: Transaction) {
-        Log.d(TAG, "addTransaction: ")
-        viewModelScope.launch {
-            TransactionRepository.addTransaction(transaction)
-        }
-    }
 }
