@@ -5,14 +5,21 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams
 import android.widget.GridLayout
+import android.widget.PopupMenu
+import android.widget.PopupWindow
 import android.widget.TextView
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import com.cscyxp.buer.databinding.FragmentAddBinding
 import com.cscyxp.buer.databinding.ItemKeyBinding
+import com.cscyxp.buer.databinding.ItemTagBinding
+import com.cscyxp.buer.databinding.PopupSonCategoryBinding
 import com.cscyxp.xpviews.dp
 import com.google.android.material.datepicker.MaterialDatePicker
 import kotlinx.coroutines.launch
@@ -105,8 +112,77 @@ class AddFragment: Fragment() {
         }
 
         binding.vpTags.adapter = CategoryPagerAdapter(
-            addViewModel.categoryGrids,
-            addViewModel::onTagClick
-        )
+            addViewModel.categoryGrids
+        ) { pagerAdapter, gridAdapter, pagePosition, gridPosition, category, binding ->
+            val selectedPage = addViewModel.selectedPage
+            val selectedGrid = addViewModel.selectedGrid
+
+            // 将上次选择的复原
+            if (selectedPage != -1 && selectedGrid != -1) {
+                // 上次选中项不属于当前页时直接刷新page
+                if (selectedPage != pagePosition) pagerAdapter.notifyItemChanged(selectedPage)
+                else gridAdapter.notifyItemChanged(selectedGrid, CategoryGridAdapter.UPDATE_BACKGROUND_UNCHECKED)
+            }
+
+            // 判断重选
+            if (addViewModel.isReselect(pagePosition, gridPosition)) {
+                addViewModel.onTagClick(-1, -1, null)
+                return@CategoryPagerAdapter
+            }
+
+            // 处理这次选中
+            gridAdapter.notifyItemChanged(gridPosition, CategoryGridAdapter.UPDATE_BACKGROUND_CHECKED)
+
+            // 更新选中信息
+            addViewModel.onTagClick(pagePosition, gridPosition, category)
+
+            showPopup(category, binding)
+        }
     }
+
+    fun showPopup(category: Category, binding: ItemTagBinding) {
+        lifecycleScope.launch {
+            val sonCategories = CategoryRepository.getSonCategories(category.id)
+            if (sonCategories.isEmpty()) return@launch
+
+            // 展示小类popup window
+            val popupBinding = PopupSonCategoryBinding.inflate(layoutInflater)
+
+            val popup = PopupWindow(popupBinding.root).apply {
+                width = LayoutParams.WRAP_CONTENT
+                height = LayoutParams.WRAP_CONTENT
+                isOutsideTouchable = true
+                setOnDismissListener {
+                    this@AddFragment.binding.glNums.apply {
+                        postDelayed({
+                            children.forEach { v ->
+                                v.isClickable = true
+                            }
+                        }, 100)
+                    }
+                }
+            }
+            val adapter = CategoryGridAdapter { _, _, sonCategory, _ ->
+                addViewModel.onSonCategoryClick(sonCategory)
+                val resId = MyApp.appContext.resources.getIdentifier(
+                    sonCategory.icon,       // 文件名
+                    "drawable",      // 资源类型
+                    MyApp.appContext.packageName // 包名
+                )
+                if (resId != 0) binding.ivTagIcon.setImageResource(resId)
+                popup.dismiss()
+            }
+            adapter.submitList(sonCategories)
+
+            popupBinding.rvSonCategories.layoutManager = GridLayoutManager(requireContext(), 5, GridLayoutManager.VERTICAL, false)
+            popupBinding.rvSonCategories.adapter = adapter
+
+            // 弹出popup时，屏蔽数字键盘点击事件
+            this@AddFragment.binding.glNums.children.forEach { v ->
+                v.isClickable = false
+            }
+            popup.showAsDropDown(binding.root)
+        }
+    }
+
 }

@@ -9,10 +9,13 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cscyxp.buer.databinding.ActivityMainBinding
+import com.cscyxp.buer.db.AppDataBase
+import kotlinx.coroutines.launch
 
 private const val TAG = "MainActivity"
 
@@ -46,6 +49,15 @@ class MainActivity: AppCompatActivity() {
                     }
                 }
                 setupWithNavController(navController)
+            }
+        }
+
+        lifecycleScope.launch {
+            launch {
+                // 读取json文件中的默认分类
+                val defaultCategories = RawUtil.loadCategoriesFromRaw()
+                //插入数据库中
+                AppDataBase.instance.categoryDao().insertList(defaultCategories)
             }
         }
     }

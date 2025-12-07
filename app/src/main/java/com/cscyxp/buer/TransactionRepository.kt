@@ -1,6 +1,6 @@
 package com.cscyxp.buer
 
-import android.util.Log
+import com.cscyxp.buer.db.AppDataBase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
@@ -49,8 +49,9 @@ object TransactionRepository {
 
     private val _categories: List<Category> = loadCategoriesFromRaw()
     val categories = _categories.map { it.copy() }
+    val topCategories = _categories.map { it.copy() }.filter { it.parentId == null }
 
-    val categoryGrid get(): List<List<Category>> = _categories.map { it.copy() }.chunked(10)
+    val categoryGrid get(): List<List<Category>> = topCategories.chunked(10)
 
     fun loadCategoriesFromRaw(): List<Category> {
         val json = MyApp.appContext.resources.openRawResource(R.raw.categories)

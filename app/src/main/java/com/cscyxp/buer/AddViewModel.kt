@@ -17,41 +17,24 @@ private const val TAG = "AddViewModel"
  */
 class AddViewModel: ViewModel() {
     val categoryGrids = TransactionRepository.categoryGrid
-    private var selectedPage = -1
-    private var selectedGrid = -1
-    val selectedCategoryId: Long
-        get() =
-            if (selectedPage != -1 && selectedGrid != -1) categoryGrids[selectedPage][selectedGrid].id
-            else -1
+    var selectedPage = -1
+    var selectedGrid = -1
+    var selectedCategory: Category? = null
 
     fun onTagClick(
-        pageAdapter: CategoryPagerAdapter,
-        gridAdapter: CategoryGridAdapter,
         pagePosition: Int,
         gridPosition: Int,
+        category: Category?
     ){
-        // 点击同一个
-        if (pagePosition == selectedPage && gridPosition == selectedGrid) {
-            categoryGrids[selectedPage][selectedGrid].toggleSelection()
-            gridAdapter.notifyItemChanged(gridPosition, CategoryGridAdapter.UPDATE_BACKGROUND)
-            selectedPage = -1
-            selectedGrid = -1
-            return
-        }
-
-        // 将上次选择的复原
-        if (selectedPage != -1 && selectedGrid != -1) {
-            categoryGrids[selectedPage][selectedGrid].isSelected = false
-            // 上次选中项不属于当前页时直接刷新page
-            if (selectedPage != pagePosition) pageAdapter.notifyItemChanged(selectedPage)
-            else gridAdapter.notifyItemChanged(selectedGrid, CategoryGridAdapter.UPDATE_BACKGROUND)
-        }
-
-        // 处理当前选择item
         selectedPage = pagePosition
         selectedGrid = gridPosition
-        categoryGrids[selectedPage][selectedGrid].isSelected = true
-        gridAdapter.notifyItemChanged(gridPosition, CategoryGridAdapter.UPDATE_BACKGROUND)
+        selectedCategory = category
+    }
+
+    fun onSonCategoryClick(
+        category: Category
+    ){
+        selectedCategory = category
     }
 
     val date = MutableStateFlow(LocalDate.now())
@@ -100,7 +83,7 @@ class AddViewModel: ViewModel() {
         if (amount != null && amount != 0.0) {
             val transaction = Transaction(
                 amount = amount,
-                categoryId = selectedCategoryId,
+                categoryId = selectedCategory?.id ?: 0,
                 date = getCheckDate()
             )
             viewModelScope.launch {
@@ -132,6 +115,10 @@ class AddViewModel: ViewModel() {
                 .atZone(ZoneId.systemDefault())
                 .toInstant().toEpochMilli()
         }
+    }
+
+    fun isReselect(pagePosition: Int, gridPosition: Int): Boolean {
+        return pagePosition == selectedPage && gridPosition == selectedGrid
     }
 
 }

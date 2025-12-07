@@ -5,10 +5,6 @@ data class Category(
     val name: String,
     val type: Int,
     val icon: String,
-    var isSelected: Boolean = false
+    val parentId: Long? = null,
 
-) {
-    fun toggleSelection() {
-        isSelected = !isSelected
-    }
-}
+)

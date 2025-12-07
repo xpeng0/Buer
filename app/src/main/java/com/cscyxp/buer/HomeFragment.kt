@@ -128,7 +128,7 @@ class HomeFragment: Fragment() {
         categoryPickerDialog.setContentView(categoryPickerBinding.root)
         categoryPickerDialog.window?.navigationBarColor = Color.TRANSPARENT
 
-        val adapter = CategoryGridAdapter { adapter, position ->
+        val adapter = CategoryGridAdapter { adapter, position, _, _ ->
             val category = adapter.currentList[position]
             viewModel.setCategory(category)
             categoryPickerDialog.dismiss()

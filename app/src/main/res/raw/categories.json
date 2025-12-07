@@ -2,12 +2,11 @@
   { "id": 1,  "name": "餐饮",       "type": 0, "icon": "ic_food" },
   { "id": 2,  "name": "健身",       "type": 0, "icon": "ic_fitness" },
   { "id": 3,  "name": "购物",       "type": 0, "icon": "ic_shopping" },
-  { "id": 4,  "name": "奶茶",       "type": 0, "icon": "ic_bubble_tea" },
-  { "id": 5,  "name": "咖啡",     "type": 0, "icon": "ic_coffee" },
+
   { "id": 6,  "name": "通讯",       "type": 0, "icon": "ic_phone" },
   { "id": 7,  "name": "游戏",       "type": 0, "icon": "ic_game" },
   { "id": 8,  "name": "理发",       "type": 0, "icon": "ic_haircut" },
-  { "id": 9,  "name": "饮品",       "type": 0, "icon": "ic_drink" },
+
   { "id": 10, "name": "交通",       "type": 0, "icon": "ic_transport" },
   { "id": 11, "name": "旅游",       "type": 0, "icon": "ic_travel" },
   { "id": 12, "name": "宠物",       "type": 0, "icon": "ic_pet" },
@@ -19,6 +18,14 @@
   { "id": 18, "name": "医疗",       "type": 0, "icon": "ic_medicine" },
   { "id": 19, "name": "保险",       "type": 0, "icon": "ic_insurance" },
   { "id": 20, "name": "其他支出",   "type": 0, "icon": "ic_more" },
+
+  { "id": 101, "parentId": 1, "name": "麦当劳",   "type": 0, "icon": "ic_food" },
+  { "id": 102, "parentId": 1, "name": "食堂",   "type": 0, "icon": "ic_food" },
+  { "id": 103, "parentId": 1, "name": "外卖",   "type": 0, "icon": "ic_food" },
+  { "id": 104, "parentId": 1, "name": "餐厅",   "type": 0, "icon": "ic_food" },
+  { "id": 105,  "parentId": 1, "name": "奶茶",       "type": 0, "icon": "ic_bubble_tea" },
+  { "id": 106,  "parentId": 1, "name": "咖啡",     "type": 0, "icon": "ic_coffee" },
+  { "id": 107,  "parentId": 1, "name": "饮品",       "type": 0, "icon": "ic_drink" },
 
   { "id": 21, "name": "工资",       "type": 1, "icon": "ic_salary" },
   { "id": 22, "name": "奖金",       "type": 1, "icon": "ic_bonus" },

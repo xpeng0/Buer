@@ -1,19 +1,20 @@
 package com.cscyxp.buer
 
+import android.view.View
 import com.cscyxp.buer.databinding.ItemTagBinding
 
 class CategoryGridAdapter(
-    private val onCategoryClick: (CategoryGridAdapter, Int) -> Unit
+    private val onCategoryClick: (CategoryGridAdapter, Int, Category, ItemTagBinding) -> Unit
 ): BaseListAdapter<Category, ItemTagBinding>(ItemTagBinding::inflate, {old, new -> old.id == new.id}) {
 
     companion object {
-        const val UPDATE_BACKGROUND = "bg"
+        const val UPDATE_BACKGROUND_CHECKED = "bg_checked"
+        const val UPDATE_BACKGROUND_UNCHECKED = "bg_unchecked"
     }
 
 
     override fun onBindViewHolder(holder: BaseViewHolder<ItemTagBinding>, position: Int) {
         val category = getItem(position)
-        holder.viewBinding.clTag.isSelected = category.isSelected
         holder.viewBinding.tvTagName.text = category.name
 
         val resId = MyApp.appContext.resources.getIdentifier(
@@ -30,7 +31,7 @@ class CategoryGridAdapter(
 
         holder.viewBinding.clTag.setOnClickListener{
             val currentPosition = holder.adapterPosition
-            onCategoryClick(this, currentPosition)
+            onCategoryClick(this, currentPosition, getItem(currentPosition), holder.viewBinding)
         }
     }
 
@@ -41,10 +42,12 @@ class CategoryGridAdapter(
     ) {
         if (payloads.isEmpty()) {
             onBindViewHolder(holder, position)
-        } else if (payloads.contains(UPDATE_BACKGROUND)) {
+        } else if (payloads.contains(UPDATE_BACKGROUND_CHECKED)) {
             // 局部刷新背景
-            val category = getItem(position)
-            holder.viewBinding.clTag.isSelected = category.isSelected
+            holder.viewBinding.clTag.isSelected = true
+        } else if (payloads.contains(UPDATE_BACKGROUND_UNCHECKED)) {
+            // 局部刷新背景
+            holder.viewBinding.clTag.isSelected = false
         }
     }
 }
