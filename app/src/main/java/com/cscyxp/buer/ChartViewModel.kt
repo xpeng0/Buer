@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.cscyxp.xpviews.BarChartView
 import com.cscyxp.xpviews.PieChartView
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -57,6 +58,29 @@ class ChartViewModel: ViewModel() {
             }
     }
 
+    /**
+     * 将属于二级分类的记录统计至一级分类下
+     */
+    suspend fun toTopTransactions(transactions: List<Transaction>): List<Pair<Long, List<Transaction>>> {
+        val categoryMap = CategoryRepository.getAllCategories().groupBy { it.id }
+        val sonTransactionsMap = transactions
+            .filter { categoryMap[it.categoryId]?.get(0)?.parentId != null }
+            .groupBy { categoryMap[it.categoryId]?.get(0)?.parentId }
+
+        return transactions
+            .filter {
+                val category = categoryMap[it.categoryId]?.get(0)
+                category != null && category.parentId == null
+            }
+            .groupBy { it.categoryId }
+            .map { (id, transactions) ->
+                val allTransactions = sonTransactionsMap.getOrDefault(id, emptyList()).toMutableList()
+                allTransactions.addAll(transactions)
+                id to allTransactions.toList()
+            }
+
+    }
+
     suspend fun toPieEntry(transactions: List<Transaction>): List<PieChartView.PieEntry> {
         return transactions.groupBy {
             it.categoryId
@@ -68,6 +92,19 @@ class ChartViewModel: ViewModel() {
         }.sortedBy {
             -it.value
         }
+
+    }
+
+    suspend fun toPieEntry2(transactions: List<Transaction>): List<PieChartView.PieEntry> {
+        return toTopTransactions(transactions)
+            .map { (categoryId, transactions) ->
+                PieChartView.PieEntry(
+                    TransactionRepository.categories.find { it.id == categoryId }?.name ?: "空",
+                    transactions.sumOf { it.amount }
+                )
+            }.sortedBy {
+                -it.value
+            }
 
     }
 
@@ -87,9 +124,27 @@ class ChartViewModel: ViewModel() {
         }
     }
 
+    suspend fun toCategoryChart2(transactions: List<Transaction>): List<CategoryChart> {
+        val topTransactions = toTopTransactions(transactions)
+        val max = topTransactions.maxOfOrNull { pair ->
+            pair.second.sumOf { it.amount }
+        }
+        if (max == null || max == 0.0) return emptyList()
+        return topTransactions
+            .map { (categoryId, transactions) ->
+                CategoryChart(
+                    TransactionRepository.categories.find { it.id == categoryId } ?: Category(0, "", 0, ""),
+                    value = transactions.sumOf { it.amount },
+                    progress = Math.round(transactions.sumOf { it.amount } * 100 / max).toInt()
+                )
+            }.sortedBy {
+                -it.value
+            }
+    }
+
     val chartUIState = let {
         filterMonthTransactions.map { transactions ->
-            toPieEntry(transactions) to toCategoryChart(transactions)
+            toPieEntry2(transactions) to toCategoryChart2(transactions)
         }
     }
 
@@ -97,5 +152,20 @@ class ChartViewModel: ViewModel() {
         filter.value = filter.value.copy(
             month = month
         )
+    }
+
+    fun getCategoryChartUiState(categoryId: Long): Flow<Pair<List<PieChartView.PieEntry>, List<CategoryChart>>> {
+        return filterMonthTransactions.map { transactions ->
+            Log.i(TAG, "getCategoryChartUiState: ${transactions}")
+            val categoryTs = toTopTransactions(transactions)
+                .filter { it.first == categoryId }
+                .map { it.second }
+
+            if (categoryTs.isEmpty()) {
+                emptyList<PieChartView.PieEntry>() to emptyList()
+            } else {
+                toPieEntry(categoryTs[0]) to toCategoryChart(categoryTs[0])
+            }
+        }
     }
 }

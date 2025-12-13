@@ -7,6 +7,12 @@ import kotlinx.coroutines.withContext
 object CategoryRepository {
     private val dao = AppDataBase.instance.categoryDao()
 
+    suspend fun getAllCategories(): List<Category> {
+        return withContext(Dispatchers.IO) {
+            dao.getAllCategories().map { it.toCategory() }
+        }
+    }
+
     suspend fun getTopCategories(): List<Category> {
         return withContext(Dispatchers.IO) {
             dao.getTopCategories().map { it.toCategory() }

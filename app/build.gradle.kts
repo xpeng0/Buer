@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.devtools.ksp") version "2.0.21-1.0.25" // 版本要和 Kotlin 对应
+    alias(libs.plugins.navigation.safeargs.kotlin)
 }
 
 android {

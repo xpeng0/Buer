@@ -7,8 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cscyxp.buer.databinding.FragmentChartBinding
 import com.cscyxp.xpviews.BarChartView
@@ -22,7 +24,7 @@ class ChartFragment: Fragment() {
 
     private var _binding: FragmentChartBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: ChartViewModel by viewModels()
+    private val viewModel: ChartViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +43,10 @@ class ChartFragment: Fragment() {
             viewModel.setMonth(month + index - 5)
 
         }
-        val categoryChartAdapter = CategoryChartAdapter()
+        val categoryChartAdapter = CategoryChartAdapter { adapter, position, categoryChart ->
+            val action = ChartFragmentDirections.actionChartFragmentToCategoryChartFragment(categoryChart.category.id)
+            findNavController().navigate(action)
+        }
         binding.rvCategoryChart.itemAnimator = null
         binding.rvCategoryChart.adapter = categoryChartAdapter
         binding.rvCategoryChart.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)

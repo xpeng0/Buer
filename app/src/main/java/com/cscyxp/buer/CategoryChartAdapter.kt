@@ -2,7 +2,11 @@ package com.cscyxp.buer
 
 import com.cscyxp.buer.databinding.ItemCategoryChartBinding
 
-class CategoryChartAdapter: BaseListAdapter<CategoryChart, ItemCategoryChartBinding>(
+class CategoryChartAdapter(
+    val onItemClick: (
+        adapter: CategoryChartAdapter,
+        position: Int, categoryChart: CategoryChart) -> Unit
+): BaseListAdapter<CategoryChart, ItemCategoryChartBinding>(
     getBinging = ItemCategoryChartBinding::inflate,
     areItemsTheSame = {item1, item2 ->
         // 会导致刷新后位置乱跳
@@ -23,5 +27,10 @@ class CategoryChartAdapter: BaseListAdapter<CategoryChart, ItemCategoryChartBind
         viewBinding.tvName.text = category.name
         viewBinding.tvValue.text = "¥%.2f".format(value)
         viewBinding.lpRatio.progress = progress
+
+        holder.itemView.setOnClickListener {
+            val currentPosition = holder.adapterPosition
+            onItemClick(this, currentPosition, getItem(currentPosition))
+        }
     }
 }

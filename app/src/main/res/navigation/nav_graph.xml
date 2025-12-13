@@ -23,6 +23,19 @@
         android:id="@+id/chartFragment"
         android:name="com.cscyxp.buer.ChartFragment"
         android:label="Chart">
+        <action
+            android:id="@+id/action_chartFragment_to_categoryChartFragment"
+            app:destination="@id/categoryChartFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/categoryChartFragment"
+        android:name="com.cscyxp.buer.CategoryChartFragment"
+        android:label="CategoryChart">
+        <argument
+            android:name="categoryId"
+            app:argType="long"
+            android:defaultValue="-1L"/>
     </fragment>
 
 </navigation>
