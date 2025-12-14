@@ -15,7 +15,6 @@ private const val TAG = "MainViewModel"
 
 class MainViewModel: ViewModel() {
 
-    val adapter by lazy { DailyTransactionAdapter() }
 
     // 当前选中的月份
     val filter = MutableStateFlow(TransactionFilter(LocalDate.now().monthValue))
@@ -54,5 +53,12 @@ class MainViewModel: ViewModel() {
 
     fun getCategory(): Category? {
         return filter.value.category
+    }
+
+    // 更新Transaction
+    fun updateTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            TransactionRepository.updateTransaction(transaction)
+        }
     }
 }

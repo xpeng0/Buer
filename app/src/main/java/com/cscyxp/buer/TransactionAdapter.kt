@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class TransactionAdapter(
-    private val onItemClick: (Transaction) -> Unit
+    private val onItemCategoryClick: (adapter: TransactionAdapter, position: Int, item: Transaction, binding: ItemTransactionBinding) -> Unit,
 ) : BaseListAdapter<Transaction, ItemTransactionBinding>(ItemTransactionBinding::inflate, {old, new -> old.id == new.id}) {
 
     override fun onBindViewHolder(holder: BaseViewHolder<ItemTransactionBinding>, position: Int) {
@@ -38,5 +38,10 @@ class TransactionAdapter(
         holder.viewBinding.tvTime.text = DateTimeFormatter.ofPattern("HH:mm")
             .withZone(ZoneId.systemDefault())
             .format(Instant.ofEpochMilli(item.date))
+
+        holder.viewBinding.ivIcon.setOnClickListener {
+            val currentPosition = holder.adapterPosition
+            onItemCategoryClick(this, currentPosition, getItem(currentPosition), holder.viewBinding)
+        }
     }
 }

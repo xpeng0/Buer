@@ -63,13 +63,20 @@ class HomeFragment: Fragment() {
         binding.btnAdd.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_detailFragment)
         }
-        // val adapter = DailyTransactionAdapter()
-        binding.rvRecentTransactions.adapter = viewModel.adapter
+        val adapter = DailyTransactionAdapter { adapter, position, item, binding ->
+            createCategoryChangeDialog {category, dialog ->
+                val newTransaction = item.copy(categoryId = category.id)
+                // 更新数据库
+                viewModel.updateTransaction(newTransaction)
+                dialog.dismiss()
+            }.show()
+        }
+        binding.rvRecentTransactions.adapter = adapter
         binding.rvRecentTransactions.itemAnimator = null
         lifecycleScope.launch {
             launch {
                 viewModel.dailyTransactions.collect { dailyTransactions ->
-                    viewModel.adapter.submitList(dailyTransactions) {
+                    adapter.submitList(dailyTransactions) {
                         // rv显示后再滑动
                         binding.rvRecentTransactions.smoothScrollToPosition(0)
                     }
@@ -132,6 +139,23 @@ class HomeFragment: Fragment() {
             val category = adapter.currentList[position]
             viewModel.setCategory(category)
             categoryPickerDialog.dismiss()
+        }
+        adapter.submitList(TransactionRepository.categories.take(10))
+
+        categoryPickerBinding.rvCategories.adapter = adapter
+        categoryPickerBinding.rvCategories.layoutManager = GridLayoutManager(categoryPickerBinding.rvCategories.context, 5)
+        return categoryPickerDialog
+    }
+
+
+    private fun createCategoryChangeDialog(onCategoryClick: (category: Category, dialog: BottomSheetDialog) -> Unit): BottomSheetDialog {
+        val categoryPickerBinding = DialogCategoryPickerBinding.inflate(layoutInflater)
+        val categoryPickerDialog = BottomSheetDialog(requireContext())
+        categoryPickerDialog.setContentView(categoryPickerBinding.root)
+        categoryPickerDialog.window?.navigationBarColor = Color.TRANSPARENT
+
+        val adapter = CategoryGridAdapter { _, _, category, _ ->
+            onCategoryClick(category, categoryPickerDialog)
         }
         adapter.submitList(TransactionRepository.categories.take(10))
 

@@ -3,13 +3,16 @@ package com.cscyxp.buer
 import android.util.Log
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cscyxp.buer.databinding.ItemDailyTransactionBinding
+import com.cscyxp.buer.databinding.ItemTransactionBinding
 import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
 private const val TAG = "DailyTransactionAdapter"
-class DailyTransactionAdapter(): BaseListAdapter<DailyTransaction, ItemDailyTransactionBinding>(ItemDailyTransactionBinding::inflate,
+class DailyTransactionAdapter(
+    private val onItemCategoryClick: (adapter: TransactionAdapter, position: Int, item: Transaction, binding: ItemTransactionBinding) -> Unit,
+): BaseListAdapter<DailyTransaction, ItemDailyTransactionBinding>(ItemDailyTransactionBinding::inflate,
     areItemsTheSame = {old, new ->
         old.date == new.date
     }
@@ -33,7 +36,7 @@ class DailyTransactionAdapter(): BaseListAdapter<DailyTransaction, ItemDailyTran
         }
         if (rv.adapter == null) {
             Log.i(TAG, "设置内层rv adapter")
-            rv.adapter = TransactionAdapter{}
+            rv.adapter = TransactionAdapter(onItemCategoryClick)
         }
         (rv.adapter as TransactionAdapter).submitList(dailyTransaction.transactions)
     }

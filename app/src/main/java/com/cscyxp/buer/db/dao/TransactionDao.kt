@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.cscyxp.buer.Transaction
 import kotlinx.coroutines.flow.Flow
 
@@ -27,5 +28,8 @@ interface TransactionDao {
         endMonthTs: Long,
         categoryId: Long? = null
     ): Flow<List<Transaction>>
+
+    @Update
+    suspend fun updateTransaction(transaction: Transaction): Int
 
 }

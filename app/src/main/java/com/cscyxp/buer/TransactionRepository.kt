@@ -73,6 +73,10 @@ object TransactionRepository {
         transactionDao.insertList(transactions)
     }
 
+    suspend fun updateTransaction(transaction: Transaction) {
+        transactionDao.updateTransaction(transaction)
+    }
+
 
     suspend fun addTestTransactions() {
         val start = LocalDate.of(2025,1,1)
