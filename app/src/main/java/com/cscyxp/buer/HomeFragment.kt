@@ -32,7 +32,6 @@ class HomeFragment: Fragment() {
     private val viewModel: MainViewModel by activityViewModels()
     private var monthPickerDialog: BottomSheetDialog? = null
 
-    private var categoryPickerDialog: BottomSheetDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,10 +52,10 @@ class HomeFragment: Fragment() {
         }
 
         binding.tvCategory.setOnClickListener {
-            if (categoryPickerDialog == null) {
-                categoryPickerDialog = createCategoryDialog()
-            }
-            categoryPickerDialog?.show()
+            createCategoryChangeDialog(5) { category, dialog ->
+                viewModel.setCategory(category)
+                dialog.dismiss()
+            }.show()
         }
 
 
@@ -64,7 +63,7 @@ class HomeFragment: Fragment() {
             findNavController().navigate(R.id.action_homeFragment_to_detailFragment)
         }
         val adapter = DailyTransactionAdapter { adapter, position, item, binding ->
-            createCategoryChangeDialog {category, dialog ->
+            createCategoryChangeDialog(5) {category, dialog ->
                 val newTransaction = item.copy(categoryId = category.id)
                 // 更新数据库
                 viewModel.updateTransaction(newTransaction)
@@ -104,8 +103,6 @@ class HomeFragment: Fragment() {
         super.onDestroyView()
         monthPickerDialog?.dismiss()
         monthPickerDialog = null
-        categoryPickerDialog?.dismiss()
-        categoryPickerDialog = null
     }
 
     private fun createMonthPickerDialog(): BottomSheetDialog {
@@ -129,38 +126,43 @@ class HomeFragment: Fragment() {
         return dialog;
     }
 
-    private fun createCategoryDialog(): BottomSheetDialog {
+    private fun createCategoryChangeDialog(rowCount: Int, onCategoryClick: (category: Category, dialog: BottomSheetDialog) -> Unit): BottomSheetDialog {
         val categoryPickerBinding = DialogCategoryPickerBinding.inflate(layoutInflater)
         val categoryPickerDialog = BottomSheetDialog(requireContext())
         categoryPickerDialog.setContentView(categoryPickerBinding.root)
         categoryPickerDialog.window?.navigationBarColor = Color.TRANSPARENT
 
-        val adapter = CategoryGridAdapter { adapter, position, _, _ ->
-            val category = adapter.currentList[position]
-            viewModel.setCategory(category)
-            categoryPickerDialog.dismiss()
+        categoryPickerDialog.setOnShowListener {
+            viewLifecycleOwner.lifecycleScope.launch {
+                // 加载数据
+                val adapter = GridCategoryExpandAdapter(
+                    CategoryRepository.getTopCategories().take(10).toMutableList(),
+                    onParentsCategoryClick =  { expandAdapter, position, category, _ ->
+                        if (!category.sonCategories.isNullOrEmpty()) {
+                            expandAdapter.handleParentsExpand(position, category, rowCount)
+                        } else {
+                            onCategoryClick(category, categoryPickerDialog)
+                        }
+                    },
+                    onSonCategoryClick = { _, _, category, _ ->
+                        onCategoryClick(category, categoryPickerDialog)
+                    }
+                )
+                categoryPickerBinding.rvCategories.adapter = adapter
+                categoryPickerBinding.rvCategories.layoutManager = GridLayoutManager(categoryPickerBinding.rvCategories.context, rowCount).apply {
+                    spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                        override fun getSpanSize(position: Int): Int {
+                            val viewType = adapter.getItemViewType(position)
+                            return if (viewType == GridCategoryExpandAdapter.TYPE_CHILD) {
+                                rowCount // 如果是子项，占满全部列
+                            } else {
+                                1 // 如果是父项，占 1 列
+                            }
+                        }
+                    }
+                }
+            }
         }
-        adapter.submitList(TransactionRepository.categories.take(10))
-
-        categoryPickerBinding.rvCategories.adapter = adapter
-        categoryPickerBinding.rvCategories.layoutManager = GridLayoutManager(categoryPickerBinding.rvCategories.context, 5)
-        return categoryPickerDialog
-    }
-
-
-    private fun createCategoryChangeDialog(onCategoryClick: (category: Category, dialog: BottomSheetDialog) -> Unit): BottomSheetDialog {
-        val categoryPickerBinding = DialogCategoryPickerBinding.inflate(layoutInflater)
-        val categoryPickerDialog = BottomSheetDialog(requireContext())
-        categoryPickerDialog.setContentView(categoryPickerBinding.root)
-        categoryPickerDialog.window?.navigationBarColor = Color.TRANSPARENT
-
-        val adapter = CategoryGridAdapter { _, _, category, _ ->
-            onCategoryClick(category, categoryPickerDialog)
-        }
-        adapter.submitList(TransactionRepository.categories.take(10))
-
-        categoryPickerBinding.rvCategories.adapter = adapter
-        categoryPickerBinding.rvCategories.layoutManager = GridLayoutManager(categoryPickerBinding.rvCategories.context, 5)
         return categoryPickerDialog
     }
 }
