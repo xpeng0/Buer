@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.cscyxp.buer.databinding.DialogCategoryPickerBinding
 import com.cscyxp.buer.databinding.DialogMonthPickerBinding
 import com.cscyxp.buer.databinding.FragmentHomeBinding
+import com.cscyxp.buer.utils.NotificationUtil
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -82,9 +83,15 @@ class HomeFragment: Fragment() {
 
                     val expense = dailyTransactions.sumOf { it.expense }
                     val income = dailyTransactions.sumOf { it.income }
-                    binding.tvExpenseValue.text = String.format(Locale.getDefault(), "%.2f", expense)
-                    binding.tvIncomeValue.text = String.format(Locale.getDefault(), "%.2f", income)
+                    // todo 本日/本月收入不该用过滤后的数据
+                    val dailyExpense = dailyTransactions.filter { it.date == LocalDate.now() }.sumOf { it.expense }
+                    val dailyExpenseString = String.format(Locale.getDefault(), "%.2f", dailyExpense)
+                    val expenseString = String.format(Locale.getDefault(), "%.2f", expense)
+                    val incomeString = String.format(Locale.getDefault(), "%.2f", income)
+                    binding.tvExpenseValue.text = expenseString
+                    binding.tvIncomeValue.text = incomeString
                     binding.tvBalanceValue.text = String.format(Locale.getDefault(), "%.2f", income - expense)
+                    NotificationUtil.notifyBase(dailyExpenseString, expenseString)
                 }
             }
 
