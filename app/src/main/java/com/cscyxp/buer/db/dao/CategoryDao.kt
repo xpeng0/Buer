@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.cscyxp.buer.CategoryEntityWithChildren
 import com.cscyxp.buer.Transaction
 import com.cscyxp.buer.db.entity.CategoryEntity
 import kotlinx.coroutines.flow.Flow
@@ -25,7 +26,7 @@ interface CategoryDao {
     @Query("SELECT * FROM categories " +
             "WHERE parent_id IS NULL " +
             "ORDER BY id")
-    suspend fun getTopCategories(): List<CategoryEntity>
+    suspend fun getTopCategories(): List<CategoryEntityWithChildren>
 
     @Query("SELECT * FROM categories " +
             "WHERE parent_id = :parentId " +

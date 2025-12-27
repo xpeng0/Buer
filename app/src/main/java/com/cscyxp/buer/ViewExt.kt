@@ -17,6 +17,18 @@ fun CategoryEntity.toCategory(): Category {
         name = this.name,
         type = this.type,
         icon = this.icon,
-        parentId = this.parentId
+        parentId = this.parentId,
+        sonCategories = emptyList()
+    )
+}
+
+fun CategoryEntityWithChildren.toCategory(): Category {
+    return Category(
+        id = this.categoryEntity.id,
+        name = this.categoryEntity.name,
+        type = this.categoryEntity.type,
+        icon = this.categoryEntity.icon,
+        parentId = this.categoryEntity.parentId,
+        sonCategories = this.children.map { it.toCategory() }
     )
 }

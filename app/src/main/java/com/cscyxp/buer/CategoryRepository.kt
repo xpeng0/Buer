@@ -14,12 +14,9 @@ object CategoryRepository {
     }
 
     suspend fun getTopCategories(): List<Category> {
-        // todo 将1 + N次查询 优化为1次查询 + 手动分组
         return withContext(Dispatchers.IO) {
             dao.getTopCategories().map {
-                it.toCategory().copy(
-                    sonCategories = getSonCategories(it.id)
-                )
+                it.toCategory()
             }
         }
     }
