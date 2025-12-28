@@ -12,7 +12,7 @@ import com.cscyxp.buer.databinding.ItemTagBinding
 
 private const val TAG = "GridCategoryExpandAdapt"
 class GridCategoryExpandAdapter(
-    private val dataList: MutableList<Category>,
+    var dataList: MutableList<Category>,
     private val onParentsCategoryClick: ((adapter: GridCategoryExpandAdapter, position: Int, category: Category, binding: ItemTagBinding) -> Unit)? = null,
     private val onSonCategoryClick: ((adapter: GridCategoryExpandAdapter, position: Int, category: Category, binding: ItemTagBinding) -> Unit)? = null,
 ): Adapter<ViewHolder>() {

@@ -1,6 +1,7 @@
 package com.cscyxp.buer
 
 import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.provider.CalendarContract.Colors
 import android.util.Log
@@ -141,38 +142,73 @@ class HomeFragment: Fragment() {
     private fun createCategoryChangeDialog(rowCount: Int, onCategoryClick: (category: Category, dialog: BottomSheetDialog) -> Unit): BottomSheetDialog {
         val categoryPickerBinding = DialogCategoryPickerBinding.inflate(layoutInflater)
         val categoryPickerDialog = BottomSheetDialog(requireContext())
-        categoryPickerDialog.setContentView(categoryPickerBinding.root)
-        categoryPickerDialog.window?.navigationBarColor = Color.TRANSPARENT
+        val adapter = GridCategoryExpandAdapter(
+            emptyList<Category>().toMutableList(),
+            onParentsCategoryClick =  { expandAdapter, position, category, _ ->
+                if (!category.sonCategories.isNullOrEmpty()) {
+                    expandAdapter.handleParentsExpand(position, category, rowCount)
+                } else {
+                    onCategoryClick(category, categoryPickerDialog)
+                }
+            },
+            onSonCategoryClick = { _, _, category, _ ->
+                onCategoryClick(category, categoryPickerDialog)
+            }
+        )
+        categoryPickerBinding.apply {
+            rvCategories.adapter = adapter
 
-        categoryPickerDialog.setOnShowListener {
-            viewLifecycleOwner.lifecycleScope.launch {
-                // 加载数据
-                val adapter = GridCategoryExpandAdapter(
-                    CategoryRepository.getTopCategories().take(10).toMutableList(),
-                    onParentsCategoryClick =  { expandAdapter, position, category, _ ->
-                        if (!category.sonCategories.isNullOrEmpty()) {
-                            expandAdapter.handleParentsExpand(position, category, rowCount)
+            rvCategories.layoutManager = GridLayoutManager(categoryPickerBinding.rvCategories.context, rowCount).apply {
+                spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                    override fun getSpanSize(position: Int): Int {
+                        val viewType = adapter.getItemViewType(position)
+                        return if (viewType == GridCategoryExpandAdapter.TYPE_CHILD) {
+                            rowCount // 如果是子项，占满全部列
                         } else {
-                            onCategoryClick(category, categoryPickerDialog)
-                        }
-                    },
-                    onSonCategoryClick = { _, _, category, _ ->
-                        onCategoryClick(category, categoryPickerDialog)
-                    }
-                )
-                categoryPickerBinding.rvCategories.adapter = adapter
-                categoryPickerBinding.rvCategories.layoutManager = GridLayoutManager(categoryPickerBinding.rvCategories.context, rowCount).apply {
-                    spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                        override fun getSpanSize(position: Int): Int {
-                            val viewType = adapter.getItemViewType(position)
-                            return if (viewType == GridCategoryExpandAdapter.TYPE_CHILD) {
-                                rowCount // 如果是子项，占满全部列
-                            } else {
-                                1 // 如果是父项，占 1 列
-                            }
+                            1 // 如果是父项，占 1 列
                         }
                     }
                 }
+            }
+
+            tvExpand.setOnClickListener {
+                viewModel.setCategoryDialogFilterType(Category.TYPE_EXPAND)
+            }
+
+            tvIncome.setOnClickListener {
+                viewModel.setCategoryDialogFilterType(Category.TYPE_INCOME)
+            }
+        }
+
+
+        val job = viewLifecycleOwner.lifecycleScope.launch {
+            launch {
+                // 加载数据
+                viewModel.topCategoriesByFilter.collect { categories ->
+                    adapter.dataList = categories.toMutableList()
+                    adapter.notifyDataSetChanged()
+                }
+            }
+
+            launch {
+                viewModel.categoryFilter.collect { type ->
+                    if (type == Category.TYPE_EXPAND) {
+                        categoryPickerBinding.tvExpand.setTypeface(null, Typeface.BOLD)
+                        categoryPickerBinding.tvIncome.setTypeface(null)
+
+                    } else {
+                        categoryPickerBinding.tvExpand.setTypeface(null)
+                        categoryPickerBinding.tvIncome.setTypeface(null, Typeface.BOLD)
+                    }
+                }
+            }
+        }
+
+        categoryPickerDialog.apply {
+            setContentView(categoryPickerBinding.root)
+            window?.navigationBarColor = Color.TRANSPARENT
+            setOnDismissListener {
+                job.cancel()
             }
         }
         return categoryPickerDialog

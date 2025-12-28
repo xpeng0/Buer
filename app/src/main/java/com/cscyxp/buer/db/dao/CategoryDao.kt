@@ -28,6 +28,12 @@ interface CategoryDao {
     suspend fun getTopCategories(): List<CategoryEntityWithChildren>
 
     @Query("SELECT * FROM categories " +
+            "WHERE parent_id IS NULL " +
+            "AND (:type IS NULL OR type = :type)" +
+            "ORDER BY id")
+    fun getTopCategories(type: Int? = null): Flow<List<CategoryEntityWithChildren>>
+
+    @Query("SELECT * FROM categories " +
             "WHERE parent_id = :parentId " +
             "ORDER BY id")
     suspend fun getSonCategories(parentId: Long): List<CategoryEntity>

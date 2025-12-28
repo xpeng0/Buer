@@ -11,5 +11,5 @@ data class TransactionEntityWithCategoryEntity(
         parentColumn = "categoryId",
         entityColumn = "id"
     )
-    val categoryEntity: CategoryEntity? // todo 设置为可空 防止意外崩溃
+    val categoryEntity: CategoryEntity?
 )

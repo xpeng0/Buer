@@ -1,5 +1,5 @@
 [
-  { "id": 0,  "name": "默认",       "type": 0, "icon": "ic_default" },
+  { "id": 10000,  "name": "默认",       "type": 0, "icon": "ic_default" },
 
   { "id": 1,  "name": "餐饮",       "type": 0, "icon": "ic_food" },
   { "id": 2,  "name": "健身",       "type": 0, "icon": "ic_fitness" },

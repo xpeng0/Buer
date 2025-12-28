@@ -12,10 +12,12 @@ data class Category(
 ) {
     companion object {
         val DEFAULT = Category(
-            id = 0,
+            id = 10000,
             name = "默认",
             type = 0,
             icon = "ic_default"
         )
+        val TYPE_EXPAND = 0
+        val TYPE_INCOME = 1
     }
 }

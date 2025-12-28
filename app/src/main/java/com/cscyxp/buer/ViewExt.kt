@@ -42,6 +42,7 @@ fun CategoryEntityWithChildren.toCategory(): Category {
 
 fun TransactionEntityWithCategoryEntity.toTransaction(): Transaction {
     return Transaction(
+        id = this.transactionEntity.id,
         title = this.transactionEntity.title,
         type = this.transactionEntity.type,
         amount = this.transactionEntity.amount,

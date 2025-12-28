@@ -95,4 +95,20 @@ class MainViewModel: ViewModel() {
             TransactionRepository.updateTransaction(transaction)
         }
     }
+
+
+    // ------------------ 分类相关 -------------------
+
+    // 分类过滤器
+    private val _categoryFilter = MutableStateFlow(Category.TYPE_EXPAND)
+    val categoryFilter = _categoryFilter
+
+    // 分类数据
+    val topCategoriesByFilter = categoryFilter.flatMapLatest { type ->
+        CategoryRepository.getTopCategories(type)
+    }
+
+    fun setCategoryDialogFilterType(type: Int) {
+        _categoryFilter.value = type
+    }
 }

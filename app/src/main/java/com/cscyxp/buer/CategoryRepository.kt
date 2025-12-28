@@ -2,6 +2,8 @@ package com.cscyxp.buer
 
 import com.cscyxp.buer.db.AppDataBase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 object CategoryRepository {
@@ -19,6 +21,12 @@ object CategoryRepository {
                 it.toCategory()
             }
         }
+    }
+
+    fun getTopCategories(type: Int): Flow<List<Category>> {
+            return dao.getTopCategories(type).map { list ->
+                list.map {it.toCategory()}
+            }
     }
 
     suspend fun getSonCategories(parentId: Long): List<Category> {
