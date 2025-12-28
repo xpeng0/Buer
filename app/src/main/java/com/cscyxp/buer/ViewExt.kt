@@ -3,6 +3,13 @@ package com.cscyxp.buer
 
 import android.view.View
 import com.cscyxp.buer.db.entity.CategoryEntity
+import com.cscyxp.buer.db.entity.CategoryEntityWithChildren
+import com.cscyxp.buer.db.entity.TransactionEntity
+import com.cscyxp.buer.db.entity.TransactionEntityWithCategoryEntity
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.Locale
 
 /**
  * 切换 View 的选中状态
@@ -31,4 +38,47 @@ fun CategoryEntityWithChildren.toCategory(): Category {
         parentId = this.categoryEntity.parentId,
         sonCategories = this.children.map { it.toCategory() }
     )
+}
+
+fun TransactionEntityWithCategoryEntity.toTransaction(): Transaction {
+    return Transaction(
+        title = this.transactionEntity.title,
+        type = this.transactionEntity.type,
+        amount = this.transactionEntity.amount,
+        date = this.transactionEntity.date,
+        categoryId = this.transactionEntity.categoryId,
+        category = this.categoryEntity?.toCategory() ?: Category.DEFAULT
+    )
+}
+
+fun Transaction.getLocalDateTime(): LocalDateTime {
+    return Instant.ofEpochMilli(this.date)  // 将时间戳转换为 Instant
+        .atZone(ZoneId.systemDefault())     // 转换为指定时区的 ZonedDateTime
+        .toLocalDateTime()
+}
+
+fun Transaction.toTransactionEntity(): TransactionEntity {
+    return TransactionEntity(
+        id = this.id,
+        categoryId = this.categoryId,
+        title = this.title,
+        type = this.type,
+        amount = this.amount,
+        date = this.date
+    )
+}
+
+fun TransactionEntity.toTransaction(): Transaction {
+    return Transaction(
+        id = this.id,
+        categoryId = this.categoryId,
+        title = this.title,
+        type = this.type,
+        amount = this.amount,
+        date = this.date
+    )
+}
+
+fun Double.format2f(): String {
+    return String.format(Locale.getDefault(), "%.2f", this)
 }

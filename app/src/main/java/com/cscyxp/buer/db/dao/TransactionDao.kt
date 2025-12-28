@@ -6,18 +6,23 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.cscyxp.buer.Transaction
+import com.cscyxp.buer.db.entity.TransactionEntity
+import com.cscyxp.buer.db.entity.TransactionEntityWithCategoryEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TransactionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(transaction: Transaction)
+    suspend fun insert(transaction: TransactionEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertList(transactions: List<Transaction>)
+    suspend fun insertList(transactions: List<TransactionEntity>)
 
     @Query("SELECT * FROM transactions ORDER BY date DESC")
-    fun getAllTransactions(): Flow<List<Transaction>>
+    fun getAllTransactions(): Flow<List<TransactionEntity>>
+
+    @Query("SELECT * FROM transactions ORDER BY date DESC")
+    fun getAllTransactionsWithCategory(): Flow<List<TransactionEntityWithCategoryEntity>>
 
     @Query("SELECT * FROM transactions " +
             "WHERE (:startMonthTs IS NULL OR :endMonthTs IS NULL OR date BETWEEN :startMonthTs AND :endMonthTs) " +
@@ -27,9 +32,9 @@ interface TransactionDao {
         startMonthTs: Long,
         endMonthTs: Long,
         categoryId: Long? = null
-    ): Flow<List<Transaction>>
+    ): Flow<List<TransactionEntityWithCategoryEntity>>
 
     @Update
-    suspend fun updateTransaction(transaction: Transaction): Int
+    suspend fun updateTransaction(transaction: TransactionEntity): Int
 
 }

@@ -1,6 +1,5 @@
 package com.cscyxp.buer
 
-import com.cscyxp.buer.databinding.ItemTagBinding
 
 data class Category(
     val id: Long,
@@ -10,4 +9,13 @@ data class Category(
     val parentId: Long? = null,
     val adapterType: Int = GridCategoryExpandAdapter.TYPE_PARENTS,
     val sonCategories: List<Category>? = emptyList(),
-)
+) {
+    companion object {
+        val DEFAULT = Category(
+            id = 0,
+            name = "默认",
+            type = 0,
+            icon = "ic_default"
+        )
+    }
+}

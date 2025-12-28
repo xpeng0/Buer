@@ -1,8 +1,7 @@
-package com.cscyxp.buer
+package com.cscyxp.buer.db.entity
 
 import androidx.room.Embedded
 import androidx.room.Relation
-import com.cscyxp.buer.db.entity.CategoryEntity
 
 data class CategoryEntityWithChildren(
     @Embedded

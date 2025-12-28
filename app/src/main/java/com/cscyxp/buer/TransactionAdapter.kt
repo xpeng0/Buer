@@ -19,10 +19,7 @@ class TransactionAdapter(
 
     override fun onBindViewHolder(holder: BaseViewHolder<ItemTransactionBinding>, position: Int) {
         val item = getItem(position)
-        var category = TransactionRepository.categories.firstOrNull() { it.id == item.categoryId }
-        if (category == null) {
-            category = Category(0, "消费", 0, "ic_ledger")
-        }
+        val category = item.category
         holder.viewBinding.tvTitle.text = category.name
         var iconId = MyApp.appContext.resources.getIdentifier(
             category.icon,       // 文件名

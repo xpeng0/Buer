@@ -10,11 +10,12 @@ import com.cscyxp.buer.Transaction
 import com.cscyxp.buer.db.dao.CategoryDao
 import com.cscyxp.buer.db.dao.TransactionDao
 import com.cscyxp.buer.db.entity.CategoryEntity
+import com.cscyxp.buer.db.entity.TransactionEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Transaction::class, CategoryEntity::class], version = 2, exportSchema = false)
+@Database(entities = [TransactionEntity::class, CategoryEntity::class], version = 2, exportSchema = false)
 abstract class AppDataBase: RoomDatabase() {
     companion object {
         val instance: AppDataBase by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {

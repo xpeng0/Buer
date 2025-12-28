@@ -61,32 +61,30 @@ class ChartViewModel: ViewModel() {
     /**
      * 将属于二级分类的记录统计至一级分类下
      */
-    suspend fun toTopTransactions(transactions: List<Transaction>): List<Pair<Long, List<Transaction>>> {
-        val categoryMap = CategoryRepository.getAllCategories().groupBy { it.id }
+    suspend fun toTopTransactions(transactions: List<Transaction>): List<Pair<Category, List<Transaction>>> {
         val sonTransactionsMap = transactions
-            .filter { categoryMap[it.categoryId]?.get(0)?.parentId != null }
-            .groupBy { categoryMap[it.categoryId]?.get(0)?.parentId }
+            .filter { it.category.parentId != null }
+            .groupBy { it.category.parentId }
 
         return transactions
             .filter {
-                val category = categoryMap[it.categoryId]?.get(0)
-                category != null && category.parentId == null
+                it.category.parentId == null
             }
-            .groupBy { it.categoryId }
-            .map { (id, transactions) ->
-                val allTransactions = sonTransactionsMap.getOrDefault(id, emptyList()).toMutableList()
+            .groupBy { it.category }
+            .map { (category, transactions) ->
+                val allTransactions = sonTransactionsMap.getOrDefault(category.id, emptyList()).toMutableList()
                 allTransactions.addAll(transactions)
-                id to allTransactions.toList()
+                category to allTransactions.toList()
             }
 
     }
 
     suspend fun toPieEntry(transactions: List<Transaction>): List<PieChartView.PieEntry> {
         return transactions.groupBy {
-            it.categoryId
-        }.map { (categoryId, transactions) ->
+            it.category
+        }.map { (category, transactions) ->
             PieChartView.PieEntry(
-                TransactionRepository.categories.find { it.id == categoryId }?.name ?: "空",
+                category.name,
                 transactions.sumOf { it.amount }
             )
         }.sortedBy {
@@ -97,9 +95,9 @@ class ChartViewModel: ViewModel() {
 
     suspend fun toPieEntry2(transactions: List<Transaction>): List<PieChartView.PieEntry> {
         return toTopTransactions(transactions)
-            .map { (categoryId, transactions) ->
+            .map { (category, transactions) ->
                 PieChartView.PieEntry(
-                    TransactionRepository.categories.find { it.id == categoryId }?.name ?: "空",
+                    category.name,
                     transactions.sumOf { it.amount }
                 )
             }.sortedBy {
@@ -112,10 +110,10 @@ class ChartViewModel: ViewModel() {
         val max = transactions.groupBy { it.categoryId }.maxOfOrNull { it.value.sumOf { it.amount } }
         if (max == null) return emptyList()
         return transactions.groupBy {
-            it.categoryId
-        }.map { (categoryId, transactions) ->
+            it.category
+        }.map { (category, transactions) ->
             CategoryChart(
-                TransactionRepository.categories.find { it.id == categoryId } ?: Category(0, "", 0, ""),
+                category,
                 value = transactions.sumOf { it.amount },
                 progress = Math.round(transactions.sumOf { it.amount } * 100 / max).toInt()
             )
@@ -131,9 +129,9 @@ class ChartViewModel: ViewModel() {
         }
         if (max == null || max == 0.0) return emptyList()
         return topTransactions
-            .map { (categoryId, transactions) ->
+            .map { (category, transactions) ->
                 CategoryChart(
-                    TransactionRepository.categories.find { it.id == categoryId } ?: Category(0, "", 0, ""),
+                    category,
                     value = transactions.sumOf { it.amount },
                     progress = Math.round(transactions.sumOf { it.amount } * 100 / max).toInt()
                 )
@@ -158,7 +156,7 @@ class ChartViewModel: ViewModel() {
         return filterMonthTransactions.map { transactions ->
             Log.i(TAG, "getCategoryChartUiState: ${transactions}")
             val categoryTs = toTopTransactions(transactions)
-                .filter { it.first == categoryId }
+                .filter { it.first.id == categoryId }
                 .map { it.second }
 
             if (categoryTs.isEmpty()) {

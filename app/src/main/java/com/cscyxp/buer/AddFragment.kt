@@ -111,32 +111,34 @@ class AddFragment: Fragment() {
             }
         }
 
-        binding.vpTags.adapter = CategoryPagerAdapter(
-            addViewModel.categoryGrids
-        ) { pagerAdapter, gridAdapter, pagePosition, gridPosition, category, binding ->
-            val selectedPage = addViewModel.selectedPage
-            val selectedGrid = addViewModel.selectedGrid
+        lifecycleScope.launch {
+            binding.vpTags.adapter = CategoryPagerAdapter(
+                addViewModel.getTopCategoryGrids()
+            ) { pagerAdapter, gridAdapter, pagePosition, gridPosition, category, binding ->
+                val selectedPage = addViewModel.selectedPage
+                val selectedGrid = addViewModel.selectedGrid
 
-            // 将上次选择的复原
-            if (selectedPage != -1 && selectedGrid != -1) {
-                // 上次选中项不属于当前页时直接刷新page
-                if (selectedPage != pagePosition) pagerAdapter.notifyItemChanged(selectedPage)
-                else gridAdapter.notifyItemChanged(selectedGrid, CategoryGridAdapter.UPDATE_BACKGROUND_UNCHECKED)
+                // 将上次选择的复原
+                if (selectedPage != -1 && selectedGrid != -1) {
+                    // 上次选中项不属于当前页时直接刷新page
+                    if (selectedPage != pagePosition) pagerAdapter.notifyItemChanged(selectedPage)
+                    else gridAdapter.notifyItemChanged(selectedGrid, CategoryGridAdapter.UPDATE_BACKGROUND_UNCHECKED)
+                }
+
+                // 判断重选
+                if (addViewModel.isReselect(pagePosition, gridPosition)) {
+                    addViewModel.onTagClick(-1, -1, null)
+                    return@CategoryPagerAdapter
+                }
+
+                // 处理这次选中
+                gridAdapter.notifyItemChanged(gridPosition, CategoryGridAdapter.UPDATE_BACKGROUND_CHECKED)
+
+                // 更新选中信息
+                addViewModel.onTagClick(pagePosition, gridPosition, category)
+
+                showPopup(category, binding)
             }
-
-            // 判断重选
-            if (addViewModel.isReselect(pagePosition, gridPosition)) {
-                addViewModel.onTagClick(-1, -1, null)
-                return@CategoryPagerAdapter
-            }
-
-            // 处理这次选中
-            gridAdapter.notifyItemChanged(gridPosition, CategoryGridAdapter.UPDATE_BACKGROUND_CHECKED)
-
-            // 更新选中信息
-            addViewModel.onTagClick(pagePosition, gridPosition, category)
-
-            showPopup(category, binding)
         }
     }
 

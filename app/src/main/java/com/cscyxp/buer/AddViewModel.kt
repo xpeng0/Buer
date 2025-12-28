@@ -16,7 +16,6 @@ private const val TAG = "AddViewModel"
  * 处理tag跨页面单选逻辑
  */
 class AddViewModel: ViewModel() {
-    val categoryGrids = TransactionRepository.categoryGrid
     var selectedPage = -1
     var selectedGrid = -1
     var selectedCategory: Category? = null
@@ -119,6 +118,10 @@ class AddViewModel: ViewModel() {
 
     fun isReselect(pagePosition: Int, gridPosition: Int): Boolean {
         return pagePosition == selectedPage && gridPosition == selectedGrid
+    }
+
+    suspend fun getTopCategoryGrids(): List<List<Category>>{
+        return CategoryRepository.getTopCategories().chunked(10)
     }
 
 }

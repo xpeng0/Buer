@@ -44,6 +44,7 @@ class HomeFragment: Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.i(TAG, "onViewCreated: --------------")
 
         binding.tvMonth.setOnClickListener {
             if (monthPickerDialog == null) {
@@ -83,15 +84,11 @@ class HomeFragment: Fragment() {
 
                     val expense = dailyTransactions.sumOf { it.expense }
                     val income = dailyTransactions.sumOf { it.income }
-                    // todo 本日/本月收入不该用过滤后的数据
-                    val dailyExpense = dailyTransactions.filter { it.date == LocalDate.now() }.sumOf { it.expense }
-                    val dailyExpenseString = String.format(Locale.getDefault(), "%.2f", dailyExpense)
                     val expenseString = String.format(Locale.getDefault(), "%.2f", expense)
                     val incomeString = String.format(Locale.getDefault(), "%.2f", income)
                     binding.tvExpenseValue.text = expenseString
                     binding.tvIncomeValue.text = incomeString
                     binding.tvBalanceValue.text = String.format(Locale.getDefault(), "%.2f", income - expense)
-                    NotificationUtil.notifyBase(dailyExpenseString, expenseString)
                 }
             }
 
@@ -99,6 +96,14 @@ class HomeFragment: Fragment() {
                 viewModel.filter.collect {
                     binding.tvMonth.text = it.month.toString() + "月收支"
                     binding.tvCategory.text = it.category?.name ?: "全部类型"
+                }
+            }
+
+            launch {
+                // 日支出变化时 月支出一定变化
+                // 所以监听月支出就够
+                viewModel.monthExpand.collect {
+                    NotificationUtil.notifyBase(viewModel.todayExpand.value, it)
                 }
             }
         }
