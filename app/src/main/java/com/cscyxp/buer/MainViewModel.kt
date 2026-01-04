@@ -55,13 +55,13 @@ class MainViewModel: ViewModel() {
 
     // 根据月份动态切换查询 Flow
     val dailyTransactions = filter.flatMapLatest { filter ->
-        val startMonthTs = LocalDate.of(2025, filter.month, 1)
+        val startMonthTs = LocalDate.of(LocalDate.now().year, filter.month, 1)
             .atStartOfDay(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
 
-        val lastDay = YearMonth.of(2025, filter.month).lengthOfMonth()
-        val endMonthTs = LocalDate.of(2025, filter.month, lastDay)
+        val lastDay = YearMonth.of(LocalDate.now().year, filter.month).lengthOfMonth()
+        val endMonthTs = LocalDate.of(LocalDate.now().year, filter.month, lastDay)
             .plusDays(1)
             .atStartOfDay(ZoneId.systemDefault())
             .toInstant()

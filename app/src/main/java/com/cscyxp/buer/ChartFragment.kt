@@ -38,9 +38,9 @@ class ChartFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.bc.onBarClickListener = { index, barEntry ->
             Log.i(TAG, "onBarClick index $index")
-            val month = LocalDate.now().monthValue
+            val month = LocalDate.now().minusMonths(5L - index).monthValue
             // index是
-            viewModel.setMonth(month + index - 5)
+            viewModel.setMonth(month)
 
         }
         val categoryChartAdapter = CategoryChartAdapter { adapter, position, categoryChart ->

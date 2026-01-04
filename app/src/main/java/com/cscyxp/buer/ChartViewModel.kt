@@ -21,12 +21,16 @@ class ChartViewModel: ViewModel() {
 
     // 根据月份动态切换查询 Flow
     val filterMonthTransactions = filter.flatMapLatest { filter ->
-        val startMonthTs = LocalDate.of(2025, filter.month, 1)
+        var yearValue = LocalDate.now().year
+        if (filter.month > LocalDate.now().monthValue) {
+            yearValue = LocalDate.now().minusYears(1).year
+        }
+        val startMonthTs = LocalDate.of(yearValue, filter.month, 1)
             .atStartOfDay(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
 
-        val endMonthTs = LocalDate.of(2025, filter.month, 1)
+        val endMonthTs = LocalDate.of(yearValue, filter.month, 1)
             .plusMonths(1)
             .atStartOfDay(ZoneId.systemDefault())
             .toInstant()
@@ -52,7 +56,7 @@ class ChartViewModel: ViewModel() {
                 dailyTransactions.groupBy { dailyTransaction ->
                     dailyTransaction.date.monthValue
                 }.forEach { (month, dailyTransaction) ->
-                    barEntries[month - startMonth] = BarChartView.BarEntry("${month}月", dailyTransaction.sumOf { it.expense }.toFloat())
+                    barEntries[(month + 12 - startMonth) % 6] = BarChartView.BarEntry("${month}月", dailyTransaction.sumOf { it.expense }.toFloat())
                 }
                 barEntries
             }
