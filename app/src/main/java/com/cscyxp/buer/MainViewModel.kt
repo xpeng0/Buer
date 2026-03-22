@@ -1,98 +1,115 @@
 package com.cscyxp.buer
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cscyxp.buer.utils.TimeHelper
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.YearMonth
-import java.time.ZoneId
+import javax.inject.Inject
 
 private const val TAG = "MainViewModel"
 
-
-class MainViewModel: ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val transactionRepository: TransactionRepository,
+    private val categoryRepository: CategoryRepository,
+    private val timeHelper: TimeHelper,
+): ViewModel() {
 
 
     // 过滤器
-    private val _filter = MutableStateFlow(TransactionFilter(LocalDate.now().monthValue))
+    private val _filter = MutableStateFlow(TransactionFilter(LocalDate.now().monthValue, LocalDate.now().year))
 
     val filter: StateFlow<TransactionFilter> = _filter
 
     // 当日支出
-    private val _todayTransactions = MutableStateFlow("0.00")
-    val todayExpand: StateFlow<String> = _todayTransactions
+    val todayExpend = getExpendStateFlow(
+        timeHelper.getTodayStartTimeMillis(),
+        timeHelper.getTodayEndTimeMillis()
+    )
 
     // 本月支出
-    private val _monthTransactions = MutableStateFlow("0.00")
-    val monthExpand: StateFlow<String> = _monthTransactions
+    val monthExpend = getExpendStateFlow(
+        timeHelper.getCurrentMonthStartTimeMillis(),
+        timeHelper.getCurrentMonthEndTimeMillis()
+    )
 
 
-    init {
-        viewModelScope.launch {
-            launch {
-                val startTs = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                val endTs = LocalDate.now().atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                TransactionRepository.getTransactionsFlowByFilter(startTs, endTs).collect { list ->
-                    _todayTransactions.value = list.filter { it.type == 0 }.sumOf { it.amount }.format2f()
-                }
-            }
+    private fun getTransactionExpendSum(list: List<Transaction>): String {
+        return list.filter { it.type == 0 }.sumOf { it.amount }.format2f()
+    }
 
-            launch {
-                val startTs = LocalDate.now().withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                val endTs = YearMonth.now().atEndOfMonth().atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                TransactionRepository.getTransactionsFlowByFilter(startTs, endTs).collect { list ->
-                    _monthTransactions.value = list.filter { it.type == 0 }.sumOf { it.amount }.format2f()
-                }
-            }
-        }
+    private fun getExpendStateFlow(startTime: Long, endTime: Long): StateFlow<String> {
+        return transactionRepository
+            .getTransactionsFlowByFilter(startTime, endTime)
+            .map { getTransactionExpendSum(it) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "0.00")
     }
 
     // 根据月份动态切换查询 Flow
-    val dailyTransactions = filter.flatMapLatest { filter ->
-        val startMonthTs = LocalDate.of(LocalDate.now().year, filter.month, 1)
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli()
-
-        val lastDay = YearMonth.of(LocalDate.now().year, filter.month).lengthOfMonth()
-        val endMonthTs = LocalDate.of(LocalDate.now().year, filter.month, lastDay)
-            .plusDays(1)
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli()
-        TransactionRepository.getDailyTransactionsFlowByFilter(startMonthTs, endMonthTs, filter.category?.id) // 返回 Flow<List<Record>>
-    }
+    val homeUiState = filter
+        .flatMapLatest { filter ->
+            transactionRepository.getDailyTransactionsFlowByFilter(
+                timeHelper.getMonthStartTimeMillis(filter.year, filter.month),
+                timeHelper.getMonthEndTimeMillis(filter.year, filter.month),
+                filter.category?.id
+            )
+        }
+        .map { dailyTransactions ->
+            val expenseSum = dailyTransactions.sumOf { it.expense }
+            val incomeSum = dailyTransactions.sumOf { it.income }
+            HomeUiState(
+                dailyTransactions = dailyTransactions,
+                expenseSumStr = expenseSum.format2f(),
+                incomeSumStr = incomeSum.format2f(),
+                balanceStr = (incomeSum - expenseSum).format2f()
+            )
+        }
+        .stateIn(
+            scope = viewModelScope, // 作用域
+            started = SharingStarted.WhileSubscribed(5_000), // 没有订阅者5s停止监听
+            initialValue = HomeUiState() // 初始值
+        )
 
     fun setMonth(month: Int) {
-        _filter.value = filter.value.copy(
-            month = month
-        )
+        updateFilter(filter.value.copy(month = month))
     }
 
     fun getMonth(): Int {
         return filter.value.month
     }
 
+    fun setYear(year: Int) {
+        updateFilter(filter.value.copy(year = year))
+    }
+
+    fun getYear(): Int {
+        return filter.value.year
+    }
+
     fun setCategory(category: Category) {
-        _filter.value = filter.value.copy(
-            category = category
-        )
+        updateFilter(filter.value.copy(category = category))
     }
 
     fun getCategory(): Category? {
         return filter.value.category
     }
 
+    fun updateFilter(filter: TransactionFilter) {
+        _filter.value = filter
+    }
+
     // 更新Transaction
     fun updateTransaction(transaction: Transaction) {
         viewModelScope.launch {
-            TransactionRepository.updateTransaction(transaction)
+            transactionRepository.updateTransaction(transaction)
         }
     }
 
@@ -105,10 +122,17 @@ class MainViewModel: ViewModel() {
 
     // 分类数据
     val topCategoriesByFilter = categoryFilter.flatMapLatest { type ->
-        CategoryRepository.getTopCategories(type)
-    }
+        categoryRepository.getTopCategories(type)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun setCategoryDialogFilterType(type: Int) {
         _categoryFilter.value = type
     }
 }
+
+data class HomeUiState(
+    val dailyTransactions: List<DailyTransaction> = emptyList(),
+    val expenseSumStr: String = "0.00",
+    val incomeSumStr: String = "0.00",
+    val balanceStr: String = "0.00"
+)

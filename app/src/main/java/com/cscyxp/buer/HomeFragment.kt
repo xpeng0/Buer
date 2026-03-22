@@ -3,7 +3,6 @@ package com.cscyxp.buer
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
-import android.provider.CalendarContract.Colors
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -12,20 +11,18 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.cscyxp.buer.databinding.DialogCategoryPickerBinding
 import com.cscyxp.buer.databinding.DialogMonthPickerBinding
 import com.cscyxp.buer.databinding.FragmentHomeBinding
 import com.cscyxp.buer.utils.NotificationUtil
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.util.Locale
 
 private const val TAG = "HomeFragment"
+@AndroidEntryPoint
 class HomeFragment: Fragment() {
 
     // 只能在 onCreateView/onViewCreated 之间访问
@@ -77,25 +74,20 @@ class HomeFragment: Fragment() {
         binding.rvRecentTransactions.itemAnimator = null
         lifecycleScope.launch {
             launch {
-                viewModel.dailyTransactions.collect { dailyTransactions ->
-                    adapter.submitList(dailyTransactions) {
+                viewModel.homeUiState.collect { homeUiState ->
+                    adapter.submitList(homeUiState.dailyTransactions) {
                         // rv显示后再滑动
                         binding.rvRecentTransactions.smoothScrollToPosition(0)
                     }
-
-                    val expense = dailyTransactions.sumOf { it.expense }
-                    val income = dailyTransactions.sumOf { it.income }
-                    val expenseString = String.format(Locale.getDefault(), "%.2f", expense)
-                    val incomeString = String.format(Locale.getDefault(), "%.2f", income)
-                    binding.tvExpenseValue.text = expenseString
-                    binding.tvIncomeValue.text = incomeString
-                    binding.tvBalanceValue.text = String.format(Locale.getDefault(), "%.2f", income - expense)
+                    binding.tvExpenseValue.text = homeUiState.expenseSumStr
+                    binding.tvIncomeValue.text = homeUiState.incomeSumStr
+                    binding.tvBalanceValue.text = homeUiState.balanceStr
                 }
             }
 
             launch {
                 viewModel.filter.collect {
-                    binding.tvMonth.text = it.month.toString() + "月收支"
+                    binding.tvMonth.text = "${it.month}月收支"
                     binding.tvCategory.text = it.category?.name ?: "全部类型"
                 }
             }
@@ -103,8 +95,8 @@ class HomeFragment: Fragment() {
             launch {
                 // 日支出变化时 月支出一定变化
                 // 所以监听月支出就够
-                viewModel.monthExpand.collect {
-                    NotificationUtil.notifyBase(viewModel.todayExpand.value, it)
+                viewModel.monthExpend.collect {
+                    NotificationUtil.notifyBase(viewModel.todayExpend.value, it)
                 }
             }
         }
@@ -171,7 +163,7 @@ class HomeFragment: Fragment() {
                 }
             }
 
-            tvExpand.setOnClickListener {
+            tvExpend.setOnClickListener {
                 viewModel.setCategoryDialogFilterType(Category.TYPE_EXPAND)
             }
 
@@ -193,11 +185,11 @@ class HomeFragment: Fragment() {
             launch {
                 viewModel.categoryFilter.collect { type ->
                     if (type == Category.TYPE_EXPAND) {
-                        categoryPickerBinding.tvExpand.setTypeface(null, Typeface.BOLD)
+                        categoryPickerBinding.tvExpend.setTypeface(null, Typeface.BOLD)
                         categoryPickerBinding.tvIncome.setTypeface(null)
 
                     } else {
-                        categoryPickerBinding.tvExpand.setTypeface(null)
+                        categoryPickerBinding.tvExpend.setTypeface(null)
                         categoryPickerBinding.tvIncome.setTypeface(null, Typeface.BOLD)
                     }
                 }

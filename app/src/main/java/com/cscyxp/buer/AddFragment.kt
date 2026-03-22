@@ -22,6 +22,11 @@ import com.cscyxp.buer.databinding.ItemTagBinding
 import com.cscyxp.buer.databinding.PopupSonCategoryBinding
 import com.cscyxp.xpviews.dp
 import com.google.android.material.datepicker.MaterialDatePicker
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -29,6 +34,7 @@ import java.time.format.DateTimeFormatter
 private const val TAG = "AddFragment"
 private const val TAG_DATE_TEXT = "KEY_DATE_TEXT"
 
+@AndroidEntryPoint
 class AddFragment: Fragment() {
 
     // 只能在 onCreateView/onViewCreated 之间访问
@@ -113,38 +119,33 @@ class AddFragment: Fragment() {
 
         lifecycleScope.launch {
             binding.vpTags.adapter = CategoryPagerAdapter(
-                addViewModel.getTopCategoryGrids()
-            ) { pagerAdapter, gridAdapter, pagePosition, gridPosition, category, binding ->
-                val selectedPage = addViewModel.selectedPage
-                val selectedGrid = addViewModel.selectedGrid
-
-                // 将上次选择的复原
-                if (selectedPage != -1 && selectedGrid != -1) {
-                    // 上次选中项不属于当前页时直接刷新page
-                    if (selectedPage != pagePosition) pagerAdapter.notifyItemChanged(selectedPage)
-                    else gridAdapter.notifyItemChanged(selectedGrid, CategoryGridAdapter.UPDATE_BACKGROUND_UNCHECKED)
+                categoryPages = addViewModel.getTopCategoryGrids(),
+                selectedFlowForPage = { page ->
+                    addViewModel.selectedCategoryState.map {
+                        Log.i(TAG, "selectedCategoryState change $it")
+                        if (it.page == page) {
+                            CategoryGridAdapterState(
+                                position = it.grid,
+                                category = it.category
+                            )
+                        } else {
+                            CategoryGridAdapterState()
+                        }
+                    }.distinctUntilChanged()
+                },
+                onCategoryClick = { pagerAdapter, gridAdapter, pagePosition, gridPosition, category, binding ->
+                    // 更新选中信息
+                    addViewModel.onTagClick(pagePosition, gridPosition, category)
+                    showPopup(category, binding)
                 }
-
-                // 判断重选
-                if (addViewModel.isReselect(pagePosition, gridPosition)) {
-                    addViewModel.onTagClick(-1, -1, null)
-                    return@CategoryPagerAdapter
-                }
-
-                // 处理这次选中
-                gridAdapter.notifyItemChanged(gridPosition, CategoryGridAdapter.UPDATE_BACKGROUND_CHECKED)
-
-                // 更新选中信息
-                addViewModel.onTagClick(pagePosition, gridPosition, category)
-
-                showPopup(category, binding)
-            }
+            )
         }
     }
 
     fun showPopup(category: Category, binding: ItemTagBinding) {
+        val categoryRepository = CategoryRepository()
         lifecycleScope.launch {
-            val sonCategories = CategoryRepository.getSonCategories(category.id)
+            val sonCategories = categoryRepository.getSonCategories(category.id)
             if (sonCategories.isEmpty()) return@launch
 
             // 展示小类popup window
@@ -164,7 +165,7 @@ class AddFragment: Fragment() {
                     }
                 }
             }
-            val adapter = CategoryGridAdapter { _, _, sonCategory, _ ->
+            val adapter = CategoryGridAdapter() { _, _, sonCategory, _ ->
                 addViewModel.onSonCategoryClick(sonCategory)
                 val resId = MyApp.appContext.resources.getIdentifier(
                     sonCategory.icon,       // 文件名

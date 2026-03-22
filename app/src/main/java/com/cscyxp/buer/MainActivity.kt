@@ -15,14 +15,14 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cscyxp.buer.databinding.ActivityMainBinding
 import com.cscyxp.buer.db.AppDataBase
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 private const val TAG = "MainActivity"
 
-
+@AndroidEntryPoint
 class MainActivity: AppCompatActivity() {
     private lateinit var binding :ActivityMainBinding
-    private val viewModel: MainViewModel by viewModels()
     private val topFragmentIds: MutableSet<Int> = mutableSetOf(R.id.homeFragment, R.id.chartFragment)
 
     override fun onCreate(savedInstanceState: Bundle?) {

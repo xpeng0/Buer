@@ -1,39 +1,56 @@
 package com.cscyxp.buer
 
+import android.util.Log
+import androidx.collection.longIntMapOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
 
 private const val TAG = "AddViewModel"
 /**
  * 处理tag跨页面单选逻辑
  */
-class AddViewModel: ViewModel() {
-    var selectedPage = -1
-    var selectedGrid = -1
-    var selectedCategory: Category? = null
+@HiltViewModel
+class AddViewModel @Inject constructor(
+    private val transactionRepository: TransactionRepository,
+    private val categoryRepository: CategoryRepository,
+
+    ): ViewModel() {
+    private val _selectedCategoryState = MutableStateFlow(SelectedCategoryState())
+
+    val selectedCategoryState: StateFlow<SelectedCategoryState> = _selectedCategoryState
 
     fun onTagClick(
         pagePosition: Int,
         gridPosition: Int,
         category: Category?
     ){
-        selectedPage = pagePosition
-        selectedGrid = gridPosition
-        selectedCategory = category
+        Log.i(TAG, "onTagClick: pagePosition: $pagePosition, gridPosition: $gridPosition, category: $category")
+        if (isReselect(pagePosition, gridPosition)) {
+            onTagClick(-1, -1, null)
+        }
+        _selectedCategoryState.update { it.copy(
+            page = pagePosition,
+            grid = gridPosition,
+            category = category
+        ) }
     }
 
     fun onSonCategoryClick(
         category: Category
     ){
-        selectedCategory = category
+        _selectedCategoryState.update { it.copy(category = category) }
     }
 
     val date = MutableStateFlow(LocalDate.now())
@@ -82,11 +99,11 @@ class AddViewModel: ViewModel() {
         if (amount != null && amount != 0.0) {
             val transaction = Transaction(
                 amount = amount,
-                categoryId = selectedCategory?.id ?: 0,
+                categoryId = selectedCategoryState.value.category?.id ?: 0,
                 date = getCheckDate()
             )
             viewModelScope.launch {
-                TransactionRepository.addTransaction(transaction)
+                transactionRepository.addTransaction(transaction)
                 back.emit(1)
             }
 
@@ -117,11 +134,16 @@ class AddViewModel: ViewModel() {
     }
 
     fun isReselect(pagePosition: Int, gridPosition: Int): Boolean {
-        return pagePosition == selectedPage && gridPosition == selectedGrid
+        return pagePosition == selectedCategoryState.value.page && gridPosition == selectedCategoryState.value.grid
     }
 
     suspend fun getTopCategoryGrids(): List<List<Category>>{
-        return CategoryRepository.getTopCategories().chunked(10)
+        return categoryRepository.getTopCategories().chunked(10)
     }
 
 }
+data class SelectedCategoryState(
+    val page: Int = -1,
+    val grid: Int = -1,
+    val category: Category? = null
+)

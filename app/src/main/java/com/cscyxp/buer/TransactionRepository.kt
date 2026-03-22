@@ -10,10 +10,13 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import javax.inject.Inject
 import kotlin.random.Random
 
 private const val TAG = "TransactionRepository"
-object TransactionRepository {
+class TransactionRepository @Inject constructor(
+
+) {
     private val transactionDao = AppDataBase.instance.transactionDao()
 
 

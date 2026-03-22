@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.cscyxp.xpviews.BarChartView
 import com.cscyxp.xpviews.PieChartView
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -13,11 +14,15 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.ZoneId
+import javax.inject.Inject
 
 private const val TAG = "ChartViewModel"
-class ChartViewModel: ViewModel() {
+@HiltViewModel
+class ChartViewModel @Inject constructor(
+    private val transactionRepository: TransactionRepository,
+): ViewModel() {
     // 当前选中的月份
-    val filter = MutableStateFlow(TransactionFilter(LocalDate.now().monthValue))
+    val filter = MutableStateFlow(TransactionFilter(LocalDate.now().monthValue, LocalDate.now().year))
 
     // 根据月份动态切换查询 Flow
     val filterMonthTransactions = filter.flatMapLatest { filter ->
@@ -35,7 +40,7 @@ class ChartViewModel: ViewModel() {
             .atStartOfDay(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
-        TransactionRepository.getTransactionsFlowByFilter(startMonthTs, endMonthTs, filter.category?.id) // 返回 Flow<List<Record>>
+        transactionRepository.getTransactionsFlowByFilter(startMonthTs, endMonthTs, filter.category?.id) // 返回 Flow<List<Record>>
     }
 
     val recentSixMonthBarEntry = let {
@@ -50,7 +55,7 @@ class ChartViewModel: ViewModel() {
         val barEntries = MutableList(6) {
             BarChartView.BarEntry("${it + startMonth}月", 0.00f)
         }
-        TransactionRepository.getDailyTransactionsFlowByFilter(startMonthTs, System.currentTimeMillis(), null)
+        transactionRepository.getDailyTransactionsFlowByFilter(startMonthTs, System.currentTimeMillis(), null)
             .map { dailyTransactions ->
                 Log.i(TAG, "on recentSixMonthTransactions Collected ---- dailyTransactions: $dailyTransactions")
                 dailyTransactions.groupBy { dailyTransaction ->

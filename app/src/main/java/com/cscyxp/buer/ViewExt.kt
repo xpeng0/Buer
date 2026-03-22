@@ -6,6 +6,8 @@ import com.cscyxp.buer.db.entity.CategoryEntity
 import com.cscyxp.buer.db.entity.CategoryEntityWithChildren
 import com.cscyxp.buer.db.entity.TransactionEntity
 import com.cscyxp.buer.db.entity.TransactionEntityWithCategoryEntity
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -82,4 +84,14 @@ fun TransactionEntity.toTransaction(): Transaction {
 
 fun Double.format2f(): String {
     return String.format(Locale.getDefault(), "%.2f", this)
+}
+
+// 用于UI展示
+fun BigDecimal.format2f(): String {
+    return String.format(Locale.getDefault(), "%.2f", this)
+}
+
+// 用于计算
+fun BigDecimal.scale2f(): String {
+    return this.setScale(2, RoundingMode.HALF_UP).toPlainString()
 }

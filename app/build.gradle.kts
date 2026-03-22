@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("com.google.devtools.ksp") version "2.0.21-1.0.25" // 版本要和 Kotlin 对应
     alias(libs.plugins.navigation.safeargs.kotlin)
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -58,6 +59,7 @@ dependencies {
     implementation (libs.androidx.activity.ktx)
     implementation (libs.androidx.fragment.ktx)
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
@@ -67,8 +69,15 @@ dependencies {
     // Room 编译器（Kotlin 用 kapt，Java 用 annotationProcessor）
     ksp (libs.androidx.room.compiler)
 
-
+    // 协程核心库
+    implementation(libs.kotlinx.coroutines.android)
+    // 协程测试库
+    testImplementation(libs.kotlinx.coroutines.test)
+    // 测试协程的工具库
+    testImplementation (libs.turbine)
 
     implementation (libs.androidx.navigation.fragment.ktx)
     implementation (libs.androidx.navigation.ui.ktx)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
 }

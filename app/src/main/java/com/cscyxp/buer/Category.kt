@@ -17,7 +17,7 @@ data class Category(
             type = 0,
             icon = "ic_default"
         )
-        val TYPE_EXPAND = 0
-        val TYPE_INCOME = 1
+        const val TYPE_EXPAND = 0
+        const val TYPE_INCOME = 1
     }
 }

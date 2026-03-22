@@ -27,7 +27,7 @@ enum class KeyAction(
             DIGIT_7, DIGIT_8, DIGIT_9, DATE,
             DIGIT_4, DIGIT_5, DIGIT_6,
             DIGIT_1, DIGIT_2, DIGIT_3,
-            DOT, DIGIT_0, DELETE, OK
+            DOT    , DIGIT_0, DELETE , OK
         )
     }
 }
