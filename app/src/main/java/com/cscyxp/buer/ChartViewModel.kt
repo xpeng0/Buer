@@ -53,7 +53,7 @@ class ChartViewModel @Inject constructor(
             .toInstant()
             .toEpochMilli()
         val barEntries = MutableList(6) {
-            BarChartView.BarEntry("${it + startMonth}月", 0.00f)
+            BarChartView.BarEntry("${(it + startMonth) % 12}月", 0.00f)
         }
         transactionRepository.getDailyTransactionsFlowByFilter(startMonthTs, System.currentTimeMillis(), null)
             .map { dailyTransactions ->
@@ -61,7 +61,7 @@ class ChartViewModel @Inject constructor(
                 dailyTransactions.groupBy { dailyTransaction ->
                     dailyTransaction.date.monthValue
                 }.forEach { (month, dailyTransaction) ->
-                    barEntries[(month + 12 - startMonth) % 6] = BarChartView.BarEntry("${month}月", dailyTransaction.sumOf { it.expense }.toFloat())
+                    barEntries[(month + 12 - startMonth) % 12] = BarChartView.BarEntry("${month}月", dailyTransaction.sumOf { it.expense }.toFloat())
                 }
                 barEntries
             }
