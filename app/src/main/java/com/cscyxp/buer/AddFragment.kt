@@ -84,11 +84,12 @@ class AddFragment: Fragment() {
             launch {
                 addViewModel.date.collect { localDate ->
                     val keyText = binding.glNums.findViewWithTag<TextView>(TAG_DATE_TEXT)
-                    keyText?.text = if (localDate == LocalDate.now()) {
-                        "今天"
-                    } else {
-                        localDate.format(DateTimeFormatter.ofPattern("MM/dd"))
+                    localDate?.let {
+                        keyText?.text = localDate.format(DateTimeFormatter.ofPattern("MM/dd"))
+                    } ?: run {
+                        keyText?.text = "今天"
                     }
+
                 }
             }
 

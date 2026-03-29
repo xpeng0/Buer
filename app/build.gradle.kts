@@ -42,6 +42,12 @@ android {
     }
 }
 
+// 必须添加这个，Gradle 才会把 JUnit 5 的库加入测试编译路径
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -58,7 +64,7 @@ dependencies {
     // 如果要在 Activity / Fragment 中用 viewModels() 这种 Kotlin 扩展
     implementation (libs.androidx.activity.ktx)
     implementation (libs.androidx.fragment.ktx)
-    testImplementation(libs.junit)
+    testImplementation(libs.junit.jupiter)
     testImplementation(libs.mockk)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

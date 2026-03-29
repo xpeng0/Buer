@@ -9,7 +9,9 @@ import com.cscyxp.buer.db.entity.TransactionEntityWithCategoryEntity
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
 import java.util.Locale
 
@@ -94,4 +96,8 @@ fun BigDecimal.format2f(): String {
 // 用于计算
 fun BigDecimal.scale2f(): String {
     return this.setScale(2, RoundingMode.HALF_UP).toPlainString()
+}
+
+fun LocalDate.toEndOfDay(zone: ZoneId): Long {
+    return this.atTime(LocalTime.MAX).atZone(zone).toInstant().toEpochMilli()
 }

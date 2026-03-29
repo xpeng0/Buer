@@ -1,9 +1,11 @@
 package com.cscyxp.buer
 
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.collection.longIntMapOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cscyxp.buer.utils.TimeHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -25,8 +28,15 @@ private const val TAG = "AddViewModel"
 class AddViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val categoryRepository: CategoryRepository,
+    private val timeHelper: TimeHelper
 
     ): ViewModel() {
+
+        companion object {
+            const val OPEN_DATE_PICKER = 1
+            const val BACK = 1
+        }
+
     private val _selectedCategoryState = MutableStateFlow(SelectedCategoryState())
 
     val selectedCategoryState: StateFlow<SelectedCategoryState> = _selectedCategoryState
@@ -36,9 +46,9 @@ class AddViewModel @Inject constructor(
         gridPosition: Int,
         category: Category?
     ){
-        Log.i(TAG, "onTagClick: pagePosition: $pagePosition, gridPosition: $gridPosition, category: $category")
         if (isReselect(pagePosition, gridPosition)) {
             onTagClick(-1, -1, null)
+            return
         }
         _selectedCategoryState.update { it.copy(
             page = pagePosition,
@@ -53,8 +63,10 @@ class AddViewModel @Inject constructor(
         _selectedCategoryState.update { it.copy(category = category) }
     }
 
-    val date = MutableStateFlow(LocalDate.now())
+    val date = MutableStateFlow<LocalDate?>(null)
+    // 金额
     val amount = MutableStateFlow("")
+    // 返回上个页面
     val back = MutableSharedFlow<Int>()
     val openDatePicker = MutableSharedFlow<Int>()
 
@@ -79,7 +91,7 @@ class AddViewModel @Inject constructor(
 
     private fun onDateKeyClick() {
         viewModelScope.launch {
-            openDatePicker.emit(1)
+            openDatePicker.emit(OPEN_DATE_PICKER)
         }
     }
     private fun onDotKeyClick() {
@@ -104,7 +116,7 @@ class AddViewModel @Inject constructor(
             )
             viewModelScope.launch {
                 transactionRepository.addTransaction(transaction)
-                back.emit(1)
+                back.emit(BACK)
             }
 
         }
@@ -124,13 +136,7 @@ class AddViewModel @Inject constructor(
     }
 
     fun getCheckDate(): Long {
-        return if (date.value == LocalDate.now()) {
-            System.currentTimeMillis()
-        } else {
-            date.value.atTime(23, 59)
-                .atZone(ZoneId.systemDefault())
-                .toInstant().toEpochMilli()
-        }
+        return date.value?.toEndOfDay(ZoneId.systemDefault()) ?: timeHelper.currentTimeMillis()
     }
 
     fun isReselect(pagePosition: Int, gridPosition: Int): Boolean {

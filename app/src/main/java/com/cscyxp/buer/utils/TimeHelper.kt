@@ -2,6 +2,7 @@ package com.cscyxp.buer.utils
 
 import java.time.Clock
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneId
@@ -12,6 +13,10 @@ import javax.inject.Singleton
 class TimeHelper @Inject constructor(
     private val clock: Clock,
 ) {
+    fun currentTimeMillis(): Long {
+        return System.currentTimeMillis()
+    }
+
     fun getTodayStartTimeMillis(): Long {
         return LocalDate.now(clock).atStartOfDay(clock.zone).toInstant().toEpochMilli()
     }
