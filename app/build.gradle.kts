@@ -1,9 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("com.google.devtools.ksp") version "2.0.21-1.0.25" // 版本要和 Kotlin 对应
     alias(libs.plugins.navigation.safeargs.kotlin)
-    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 android {
@@ -60,6 +61,7 @@ dependencies {
 
     implementation(libs.gson)
     implementation (project(":xpviews"))
+    implementation(project(":finance"))
 
     // 如果要在 Activity / Fragment 中用 viewModels() 这种 Kotlin 扩展
     implementation (libs.androidx.activity.ktx)
@@ -74,6 +76,9 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     // Room 编译器（Kotlin 用 kapt，Java 用 annotationProcessor）
     ksp (libs.androidx.room.compiler)
+    // 给 KSP 强行“喂”新版序列化
+    ksp(libs.kotlinx.serialization.core)
+    ksp(libs.kotlinx.serialization.json)
 
     // 协程核心库
     implementation(libs.kotlinx.coroutines.android)
@@ -86,4 +91,9 @@ dependencies {
     implementation (libs.androidx.navigation.ui.ktx)
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
+}
+
+// 告诉 Room schemas文件存哪
+room {
+    schemaDirectory("$projectDir/schemas")
 }

@@ -1,5 +1,7 @@
 package com.cscyxp.buer.hilt
 
+import com.cscyxp.buer.db.AppDataBase
+import com.cscyxp.finance.dao.WatchlistDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,5 +17,11 @@ class UtilModule {
     @Singleton
     fun provideClock(): Clock {
         return Clock.systemDefaultZone()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFinanceWatchlistDao(): WatchlistDao {
+        return AppDataBase.instance.watchlistDao()
     }
 }

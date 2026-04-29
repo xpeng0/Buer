@@ -38,4 +38,6 @@
             android:defaultValue="-1L"/>
     </fragment>
 
+    <include app:graph="@navigation/finance_nav_graph"/>
+
 </navigation>

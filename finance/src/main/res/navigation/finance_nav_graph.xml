@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:startDestination="@id/financeFragment"
+    android:id="@+id/finance_nav_graph">
+
+    <fragment
+        android:id="@+id/financeFragment"
+        android:name="com.cscyxp.finance.ui.fragment.MainFragment"
+        android:label="Finance">
+        <action android:id="@+id/action_financeFragment_to_searchFragment"
+            app:destination="@id/searchFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.cscyxp.finance.search.ui.fragment.SearchFragment"
+        android:label="Search">
+    </fragment>
+
+
+</navigation>

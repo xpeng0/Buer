@@ -201,7 +201,7 @@
         android:backgroundTint="@color/colorSecondary"
         android:contentDescription="qq"
         android:text="记一笔"
-        app:icon="@drawable/round_add_24"
+        app:icon="@drawable/ic_add_round_24"
         app:iconTint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

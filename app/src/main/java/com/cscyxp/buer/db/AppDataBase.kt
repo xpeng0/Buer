@@ -1,5 +1,6 @@
 package com.cscyxp.buer.db
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -11,11 +12,16 @@ import com.cscyxp.buer.db.dao.CategoryDao
 import com.cscyxp.buer.db.dao.TransactionDao
 import com.cscyxp.buer.db.entity.CategoryEntity
 import com.cscyxp.buer.db.entity.TransactionEntity
+import com.cscyxp.finance.dao.WatchlistDao
+import com.cscyxp.finance.entity.WatchlistEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [TransactionEntity::class, CategoryEntity::class], version = 2, exportSchema = false)
+@Database(
+    entities = [TransactionEntity::class, CategoryEntity::class, WatchlistEntity::class],
+    version = 3,
+    exportSchema = false)
 abstract class AppDataBase: RoomDatabase() {
     companion object {
         val instance: AppDataBase by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
@@ -24,7 +30,8 @@ abstract class AppDataBase: RoomDatabase() {
                 AppDataBase::class.java,
                 "buer_database"
             ).addMigrations(
-                MIGRATION_1_2
+                MIGRATION_1_2,
+                MIGRATION_2_3
             ).addCallback(object : Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
@@ -42,4 +49,6 @@ abstract class AppDataBase: RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
 
     abstract fun categoryDao(): CategoryDao
+
+    abstract fun watchlistDao(): WatchlistDao
 }

@@ -8,5 +8,9 @@
         android:id="@+id/chartFragment"
         android:icon="@drawable/rounded_bar_chart_24"
         android:title="统计" />
+    <item
+        android:id="@+id/finance_nav_graph"
+        android:icon="@drawable/finance_mode_24"
+        android:title="理财" />
 
 </menu>

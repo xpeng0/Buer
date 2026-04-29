@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "Buer"
 include(":app")
 include(":xpviews")
+include(":finance")
