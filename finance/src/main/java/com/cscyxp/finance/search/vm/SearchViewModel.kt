@@ -114,12 +114,12 @@ class SearchViewModel @Inject constructor(
         _inputFlow.value = input
     }
 
-    fun watchStock(add: Boolean, stockKey: StockKey) {
+    fun watchStock(add: Boolean, stockKey: StockKey, stockName: String) {
         viewModelScope.launch {
             if (add) {
-                stockRepository.addStockToWatchlist(stockKey)
+                stockRepository.addStockToWatchlist(stockKey, stockName)
             } else {
-                stockRepository.removeStockFromWatchlist(stockKey)
+                stockRepository.removeStockFromWatchlist(stockKey, stockName)
             }
         }
     }

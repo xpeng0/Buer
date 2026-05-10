@@ -6,11 +6,11 @@ import com.cscyxp.finance.StockExchange
 import com.cscyxp.finance.decodeUnicode
 import com.cscyxp.finance.entity.StockInfo
 import com.cscyxp.finance.entity.StockKey
+import com.cscyxp.finance.entity.StockMinute
 import com.cscyxp.finance.entity.StockQuotation
 import com.cscyxp.finance.toDoubleOrZero
 import com.cscyxp.finance.search.ui.state.StockTag
-import com.google.gson.Gson
-import okhttp3.ResponseBody
+import com.google.gson.JsonObject
 
 object TencentStockUtil {
     fun getTencentSymbol(stockKey: StockKey): String {
@@ -79,14 +79,14 @@ object TencentStockUtil {
 
                 // 🌟 核心防御：防止数组越界。如果没有足够的数据字段，直接跳过！
                 if (qtArray.size < 35) continue
-
                 // 4. 组装实体
                 val quotation = StockQuotation(
                     open = qtArray[TencentDataSource.QT_INDEX_OPEN].toDoubleOrZero(),
                     close = qtArray[TencentDataSource.QT_INDEX_CURRENT_PRICE].toDoubleOrZero(),
                     high = qtArray[TencentDataSource.QT_INDEX_HIGH].toDoubleOrZero(),
                     low = qtArray[TencentDataSource.QT_INDEX_LOW].toDoubleOrZero(),
-                    percent = qtArray[TencentDataSource.QT_INDEX_PERCENT].toDoubleOrZero()
+                    percent = qtArray[TencentDataSource.QT_INDEX_PERCENT].toDoubleOrZero(),
+                    time = parseQtTime(qtArray[TencentDataSource.QT_INDEX_TIME])
                 )
 
                 // 5. 校验全部通过，安全存入 Map
@@ -115,7 +115,7 @@ object TencentStockUtil {
             // 获取""之间的内容
             val contentMatch = Regex("\"(.*?)\"").find(str) ?: return emptyList()
             val content = contentMatch.groupValues[1]
-            Log.d("parseFuzzySearchResponse", content)
+            // Log.d("parseFuzzySearchResponse", content)
             val infos = content.split("^")
             return infos.map { info ->
                 val array = info.split("~")
@@ -126,7 +126,7 @@ object TencentStockUtil {
                 )
             }
         } catch (e: Exception) {
-            Log.e("parseFuzzySearchResponse", "转化搜索结果出错: $e")
+            // Log.e("parseFuzzySearchResponse", "转化搜索结果出错: $e")
             return emptyList()
         }
 
@@ -149,5 +149,36 @@ object TencentStockUtil {
             }
             else -> StockTag.UNKNOWN
         }
+    }
+
+    fun parseMinuteResponse(stockKey: StockKey, jsonObject: JsonObject): StockMinute {
+        val tencentSymbol = getTencentSymbol(stockKey)
+        val data = jsonObject.getAsJsonObject("data")?.getAsJsonObject(tencentSymbol)
+        val minutes = data
+            ?.getAsJsonObject("data")
+            ?.getAsJsonArray("data")
+        val qt = data
+            ?.getAsJsonObject("qt")
+            ?.getAsJsonArray(tencentSymbol)
+        if (minutes == null || qt == null) throw RuntimeException("分时数据异常")
+        return StockMinute(
+            stockKey = stockKey,
+            stockName = qt[TencentDataSource.QT_INDEX_NAME].asString,
+            minutes = minutes.mapNotNull {
+                val split = it.asString.split(" ")
+                split[1].toDoubleOrNull()
+            },
+            currentPrice = qt[TencentDataSource.QT_INDEX_CURRENT_PRICE].asDouble,
+            todayPercent = qt[TencentDataSource.QT_INDEX_PERCENT].asDouble,
+            high = qt[TencentDataSource.QT_INDEX_HIGH].asDouble,
+            low = qt[TencentDataSource.QT_INDEX_LOW].asDouble,
+            time = parseQtTime(qt[TencentDataSource.QT_INDEX_TIME].asString)
+        )
+    }
+
+    fun parseQtTime(qtTime: String): Long {
+        return qtTime
+            .replace(" ", "").replace("\n", "").replace("/", "").replace(":", "")
+            .substring(0, 12).toLong()
     }
 }

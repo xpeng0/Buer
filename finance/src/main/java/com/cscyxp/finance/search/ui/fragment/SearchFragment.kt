@@ -14,14 +14,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.cscyxp.finance.StockListAdapter
-import com.cscyxp.finance.databinding.FragmentMainBinding
 import com.cscyxp.finance.databinding.FragmentSerchBinding
 import com.cscyxp.finance.search.ui.StockSearchListAdapter
 import com.cscyxp.finance.search.ui.state.SearchResultState
 import com.cscyxp.finance.search.ui.state.SearchScreenUiState
 import com.cscyxp.finance.search.vm.SearchViewModel
-import com.cscyxp.finance.viewModel.StockViewModel
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch

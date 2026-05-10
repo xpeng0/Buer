@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/financeFragment"
-        android:name="com.cscyxp.finance.ui.fragment.MainFragment"
+        android:name="com.cscyxp.finance.watchlist.ui.fragment.WatchlistFragment"
         android:label="Finance">
         <action android:id="@+id/action_financeFragment_to_searchFragment"
             app:destination="@id/searchFragment"/>

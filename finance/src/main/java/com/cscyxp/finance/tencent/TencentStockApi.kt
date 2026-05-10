@@ -1,5 +1,6 @@
 package com.cscyxp.finance.tencent
 
+import com.google.gson.JsonObject
 import okhttp3.ResponseBody
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -22,5 +23,10 @@ interface TencentStockApi {
     suspend fun fuzzySearchStockInfo(
         @Url url: String
     ): ResponseBody
+
+    @GET("appstock/app/minute/query")
+    suspend fun getStockMinute(
+        @Query("code") code: String
+    ): JsonObject
 
 }

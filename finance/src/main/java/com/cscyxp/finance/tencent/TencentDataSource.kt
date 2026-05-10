@@ -7,6 +7,7 @@ import com.cscyxp.finance.entity.KLineEntity
 import com.cscyxp.finance.entity.StockEntity
 import com.cscyxp.finance.entity.StockInfo
 import com.cscyxp.finance.entity.StockKey
+import com.cscyxp.finance.entity.StockMinute
 import com.cscyxp.finance.entity.StockQuotation
 import com.cscyxp.finance.retryIO
 import com.cscyxp.finance.toKLineEntities
@@ -22,6 +23,7 @@ class TencentDataSource @Inject constructor(
         const val QT_INDEX_CURRENT_PRICE = 3
         const val QT_INDEX_YESTERDAY_CLOSE = 4
         const val QT_INDEX_OPEN = 5
+        const val QT_INDEX_TIME = 30
         const val QT_INDEX_PERCENT = 32
         const val QT_INDEX_HIGH = 33
         const val QT_INDEX_LOW = 34
@@ -67,6 +69,15 @@ class TencentDataSource @Inject constructor(
                 val responseBody = tencentStockApi.fuzzySearchStockInfo(TencentStockUtil.getFuzzySearchUrl(input, range))
                 // 解析
                 TencentStockUtil.parseFuzzySearchResponse(responseBody.string())
+            }
+        }
+    }
+
+    override suspend fun getStockMinute(stockKey: StockKey): Result<StockMinute> {
+        return runCatching {
+            retryIO {
+                val jsonObject = tencentStockApi.getStockMinute(TencentStockUtil.getTencentSymbol(stockKey))
+                TencentStockUtil.parseMinuteResponse(stockKey, jsonObject)
             }
         }
     }

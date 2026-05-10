@@ -1,7 +1,7 @@
 package com.cscyxp.finance
 import org.junit.jupiter.api.Assertions.assertEquals
 
-fun <T> T.shouldBe(
+fun <T> T?.shouldBe(
     expected: T,
     message: String = "",
     isPrint: Boolean = true

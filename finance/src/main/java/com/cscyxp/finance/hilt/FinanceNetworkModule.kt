@@ -31,7 +31,7 @@ object FinanceNetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://web.ifzq.gtimg.cn/")
+            .baseUrl("https://ifzq.gtimg.cn/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

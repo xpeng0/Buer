@@ -4,6 +4,7 @@ import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.cscyxp.buer.MyApp
 import com.cscyxp.buer.RawUtil
@@ -20,7 +21,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [TransactionEntity::class, CategoryEntity::class, WatchlistEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false)
 abstract class AppDataBase: RoomDatabase() {
     companion object {
@@ -31,7 +32,8 @@ abstract class AppDataBase: RoomDatabase() {
                 "buer_database"
             ).addMigrations(
                 MIGRATION_1_2,
-                MIGRATION_2_3
+                MIGRATION_2_3,
+                MIGRATION_3_4
             ).addCallback(object : Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)

@@ -1,4 +1,4 @@
-package com.cscyxp.finance.ui.state
+package com.cscyxp.finance.watchlist.ui.state
 
 import com.cscyxp.finance.StockExchange
 import com.cscyxp.finance.StockTrend

@@ -12,5 +12,6 @@ import com.cscyxp.finance.db.WatchlistConvert
 @TypeConverters(value = [WatchlistConvert::class])
 data class WatchlistEntity(
     @Embedded
-    val stockKey: StockKey
+    val stockKey: StockKey,
+    val stockName: String
 )

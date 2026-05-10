@@ -35,9 +35,10 @@ class StockRepositoryTest {
         val repository = createRepository()
         val watchlistFlow = MutableStateFlow<List<WatchlistEntity>>(emptyList())
         val key = StockKey("11111", StockExchange.SHANG_HAI)
-        val watchlist = listOf(WatchlistEntity(key))
+        val name = "aaa"
+        val watchlist = listOf(WatchlistEntity(key, name))
         every { mockDao.getWatchlistFlow() } returns watchlistFlow
-        val result = Result.success(mapOf(key to StockQuotation(1.0, 1.0, 2.0, 2.0, 1.0)))
+        val result = Result.success(mapOf(key to StockQuotation(1.0, 1.0, 2.0, 2.0, 1.0, 1111)))
         coEvery { mockDatasource.getStockQuotation(any()) } returns result
         repository.getWatchlistStockQuotation().test {
             awaitItem().shouldBe(Result.success(emptyMap())) // 空列表对应空map
@@ -50,11 +51,12 @@ class StockRepositoryTest {
     fun `test getWatchlistStockQuotation - should emit quotation per 5s`() = runTest(testDispatcher) {
         val repository = createRepository()
         val key = StockKey("11111", StockExchange.SHANG_HAI)
-        val watchlist = listOf(WatchlistEntity(key))
+        val name = "aaa"
+        val watchlist = listOf(WatchlistEntity(key, name))
         val watchlistFlow = MutableStateFlow<List<WatchlistEntity>>(watchlist)
         every { mockDao.getWatchlistFlow() } returns watchlistFlow
-        val result1 = Result.success(mapOf(key to StockQuotation(1.0, 1.0, 1.0, 1.0, 1.0)))
-        val result2 = Result.success(mapOf(key to StockQuotation(2.0, 2.0, 2.0, 2.0, 2.0)))
+        val result1 = Result.success(mapOf(key to StockQuotation(1.0, 1.0, 1.0, 1.0, 1.0, 1111)))
+        val result2 = Result.success(mapOf(key to StockQuotation(2.0, 2.0, 2.0, 2.0, 2.0, 2222)))
         coEvery {
             mockDatasource.getStockQuotation(any())
         } returnsMany listOf(result1, result2)
@@ -64,5 +66,7 @@ class StockRepositoryTest {
             awaitItem().shouldBe(result2)
         }
     }
+
+
 
 }

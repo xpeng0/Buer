@@ -13,7 +13,7 @@ import com.cscyxp.finance.entity.StockKey
 import com.cscyxp.finance.search.ui.state.StockSearchItemUiState
 
 class StockSearchListAdapter(
-    val onToggleClick: (Boolean, StockKey) -> Unit
+    val onToggleClick: (Boolean, StockKey, String) -> Unit
 ): ListAdapter<StockSearchItemUiState, StockSearchListAdapter.StockSearchViewHolder>(StockDiffCallback()) {
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -45,7 +45,7 @@ class StockSearchListAdapter(
             binding.ivToggleAdd.backgroundTintList = ColorStateList.valueOf("#F0F0F0".toColorInt())
         }
         binding.ivToggleAdd.setOnClickListener {
-            onToggleClick(!item.isWatched, item.stockKey)
+            onToggleClick(!item.isWatched, item.stockKey, item.stockName)
         }
     }
 

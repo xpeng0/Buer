@@ -1,5 +1,6 @@
 package com.cscyxp.finance.tecent
 
+import com.cscyxp.finance.shouldBe
 import com.cscyxp.finance.tencent.TencentStockApi
 import com.cscyxp.finance.tencent.TencentDataSource
 import com.cscyxp.finance.util.JsonUtil
@@ -110,6 +111,25 @@ class TencentStockApiTest {
             { assertEquals("/appstock/app/fqkline/get", url?.encodedPath) },
             { assertEquals(arg, url?.queryParameter("param")) },
         )
+    }
+
+    @Test
+    fun `test getStockMinute`() = runTest {
+        val symbol = "sh000905"
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"code":0, "msg":"success"}""")
+        )
+        api.getStockMinute(symbol)
+        val recordedRequest = mockWebServer.takeRequest()
+        val url = recordedRequest.requestUrl
+        assertAll(
+            { recordedRequest.method.shouldBe("GET") },
+            { url?.encodedPath.shouldBe("/appstock/app/minute/query") },
+            { url?.queryParameter("code").shouldBe(symbol) },
+        )
+
     }
 
 }

@@ -4,10 +4,13 @@ import com.cscyxp.finance.SearchRange
 import com.cscyxp.finance.StockExchange
 import com.cscyxp.finance.entity.StockInfo
 import com.cscyxp.finance.entity.StockKey
+import com.cscyxp.finance.entity.StockMinute
 import com.cscyxp.finance.entity.StockQuotation
+import com.cscyxp.finance.search.ui.state.StockTag
 import com.cscyxp.finance.shouldBe
 import com.cscyxp.finance.tencent.TencentStockUtil
-import org.junit.jupiter.api.Assertions.assertEquals
+import com.cscyxp.finance.util.JsonUtil
+import com.google.gson.JsonParser
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import kotlin.collections.buildMap
@@ -65,21 +68,26 @@ class TencentStockUtilTest {
             close = 7972.85,
             high = 8070.65,
             low = 7953.50,
-            percent = 0.94
+            percent = 0.94,
+            time = 202604101452
         )
+
         val mockPab = StockQuotation(
             open = 11.10,
             close = 11.09,
             high = 11.13,
             low = 11.07,
-            percent = -0.09
+            percent = -0.09,
+            time = 202604101452
         )
+
         val mockTencent = StockQuotation(
             open = 508.000,
             close = 503.000,
             high = 514.000,
             low = 501.500,
-            percent = -1.08
+            percent = -1.08,
+            time = 202604101437
         )
         val stockQuotations = buildMap {
             put(key1, mockZz500)
@@ -101,46 +109,95 @@ class TencentStockUtilTest {
         val stockInfos = listOf(
             StockInfo(
                 stockKey = StockKey("512890", StockExchange.SHANG_HAI),
-                name = "红利低波ETF华泰柏瑞"
+                stockName = "红利低波ETF华泰柏瑞",
+                stockTag = StockTag.ETF
             ),
             StockInfo(
                 stockKey = StockKey("563020", StockExchange.SHANG_HAI),
-                name = "红利低波ETF易方达"
+                stockName = "红利低波ETF易方达",
+                stockTag = StockTag.ETF
             ),
             StockInfo(
                 stockKey = StockKey("515450", StockExchange.SHANG_HAI),
-                name = "红利低波50ETF南方"
+                stockName = "红利低波50ETF南方",
+                stockTag = StockTag.ETF
             ),
             StockInfo(
                 stockKey = StockKey("159307", StockExchange.SHEN_ZHEN),
-                name = "红利低波100ETF博时"
+                stockName = "红利低波100ETF博时",
+                stockTag = StockTag.ETF
             ),
             StockInfo(
                 stockKey = StockKey("515100", StockExchange.SHANG_HAI),
-                name = "红利低波100ETF景顺"
+                stockName = "红利低波100ETF景顺",
+                stockTag = StockTag.ETF
             ),
             StockInfo(
                 stockKey = StockKey("159547", StockExchange.SHEN_ZHEN),
-                name = "红利低波ETF华夏"
+                stockName = "红利低波ETF华夏",
+                stockTag = StockTag.ETF
             ),
             StockInfo(
                 stockKey = StockKey("159549", StockExchange.SHEN_ZHEN),
-                name = "红利低波ETF天弘"
+                stockName = "红利低波ETF天弘",
+                stockTag = StockTag.ETF
             ),
             StockInfo(
                 stockKey = StockKey("159525", StockExchange.SHEN_ZHEN),
-                name = "红利低波ETF富国"
+                stockName = "红利低波ETF富国",
+                stockTag = StockTag.ETF
             ),
             StockInfo(
                 stockKey = StockKey("560150", StockExchange.SHANG_HAI),
-                name = "红利低波ETF泰康"
+                stockName = "红利低波ETF泰康",
+                stockTag = StockTag.ETF
             ),
             StockInfo(
                 stockKey = StockKey("560520", StockExchange.SHANG_HAI),
-                name = "红利低波100ETF大成"
+                stockName = "红利低波100ETF大成",
+                stockTag = StockTag.ETF
             )
         )
         TencentStockUtil.parseFuzzySearchResponse(searchString).shouldBe(stockInfos)
+    }
+
+    @Test
+    fun `test parseMinuteResponse`() {
+        val stockKey = StockKey("000001", StockExchange.SHANG_HAI)
+        val jsonString = JsonUtil.readFileFromResources("tencent_stock_minute_success.json")
+        val jsonObject = JsonParser.parseString(jsonString).asJsonObject
+        val stockMinute = StockMinute(
+            stockKey = StockKey("000001", StockExchange.SHANG_HAI),
+            stockName = "上证指数",
+            minutes = listOf(
+                4168.45, 4165.5, 4166.13, 4168.01, 4168.25, 4167.25, 4165.57, 4168.78, 4169.08, 4169.4,
+                4170.05, 4169.34, 4167.53, 4166.76, 4164.88, 4165.97, 4168.42, 4166.14, 4165.76, 4165.37,
+                4167.3, 4168.23, 4167.84, 4169.49, 4170.25, 4170.9, 4169.57, 4167.06, 4164.61, 4165.15,
+                4165.3, 4165.77, 4166.74, 4167.28, 4167.34, 4168.02, 4169.28, 4169.06, 4170.71, 4172.27,
+                4171.16, 4168.51, 4167.36, 4168.08, 4166.32, 4164.71, 4163.32, 4164.65, 4165.09, 4165.79,
+                4166.84, 4164.4, 4166.32, 4165.47, 4165.43, 4167.08, 4167.3, 4166.27, 4167.24, 4166.18,
+                4167.22, 4167.48, 4167.11, 4168.13, 4168.08, 4167.22, 4167.62, 4168.61, 4168.87, 4170.03,
+                4169.8, 4167.24, 4166.47, 4167.19, 4165.69, 4166.38, 4168.36, 4169.43, 4169.77, 4169.72,
+                4171.23, 4171.19, 4169.71, 4169.05, 4169.53, 4168.52, 4168.44, 4168.77, 4167.59, 4166.99,
+                4166.7, 4164.68, 4165.47, 4167.7, 4166.69, 4167.5, 4167.96, 4167.78, 4166.94, 4167.83,
+                4168.1, 4166.8, 4165.79, 4166.5, 4166.42, 4167.21, 4168.56, 4169.65, 4168.6, 4168.55,
+                4170.36, 4169.38, 4169.52, 4169.47, 4168.63, 4169.84, 4170.33, 4170.95, 4171.67, 4170.84,
+                4170.75, 4170.75, 4169.99, 4169.78, 4170.39, 4169.79, 4168.22, 4169.19, 4167.93, 4166.21,
+                4168.49, 4168.45, 4169.24, 4168.44, 4170.49, 4170.59, 4170.86, 4169.39, 4170.63, 4171.55,
+                4170.55, 4170.61, 4171.05, 4171.47, 4171.27, 4168.32, 4170.39, 4170.53, 4170.23, 4168.96,
+                4168.72, 4168.78, 4168.83, 4170.53, 4171.31, 4171.12, 4171.65, 4171.34, 4171.33, 4170.92,
+                4171.01, 4170.07, 4169.96, 4171.28, 4171.57, 4172.57, 4172.58, 4174.95, 4175.76, 4176.3,
+                4175.56, 4177.28, 4176.82, 4178.18, 4177.09, 4176.33, 4176.27, 4176.28, 4177.2, 4175.96,
+                4173.92, 4173.64, 4175.17, 4176.14, 4176.16, 4175.81, 4175.63, 4174.87, 4176.72, 4176.54,
+                4175.66, 4175.68, 4175.02, 4174.87
+            ),
+            currentPrice = 4174.87,
+            todayPercent = 0.35,
+            high = 4178.3,
+            low = 4163.14,
+            time = 20260507141106
+        )
+        TencentStockUtil.parseMinuteResponse(stockKey, jsonObject).shouldBe(stockMinute)
     }
 
 }
