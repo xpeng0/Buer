@@ -14,8 +14,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cscyxp.finance.R
-import com.cscyxp.finance.WatchlistAdapter
-import com.cscyxp.finance.databinding.FragmentMainBinding
+import com.cscyxp.finance.databinding.FragmentWatchlistBinding
+import com.cscyxp.finance.watchlist.ui.adapter.WatchlistAdapter
 import com.cscyxp.finance.watchlist.vm.WatchlistViewModel
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,7 +25,7 @@ import kotlin.math.min
 
 @AndroidEntryPoint
 class WatchlistFragment: Fragment() {
-    private var _binding: FragmentMainBinding? = null
+    private var _binding: FragmentWatchlistBinding? = null
     private val binding get() = _binding!!
     private val watchlistViewModel: WatchlistViewModel by viewModels()
 
@@ -35,7 +35,7 @@ class WatchlistFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentMainBinding.inflate(inflater, container, false)
+        _binding = FragmentWatchlistBinding.inflate(inflater, container, false)
         return binding.root
     }
 

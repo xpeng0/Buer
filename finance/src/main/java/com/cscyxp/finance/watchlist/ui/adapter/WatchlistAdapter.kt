@@ -1,13 +1,14 @@
-package com.cscyxp.finance
+package com.cscyxp.finance.watchlist.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import com.cscyxp.finance.databinding.ItemStockBinding
+import androidx.recyclerview.widget.RecyclerView
+import com.cscyxp.finance.R
+import com.cscyxp.finance.StockTrend
+import com.cscyxp.finance.databinding.ItemWatchlistBinding
 import com.cscyxp.finance.watchlist.ui.state.WatchlistUiState
-
 
 class WatchlistAdapter: ListAdapter<WatchlistUiState, WatchlistAdapter.StockViewHolder>(StockDiffCallback()) {
 
@@ -15,7 +16,7 @@ class WatchlistAdapter: ListAdapter<WatchlistUiState, WatchlistAdapter.StockView
         parent: ViewGroup,
         viewType: Int
     ): StockViewHolder {
-        val binding = ItemStockBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ItemWatchlistBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return StockViewHolder(binding)
     }
 
@@ -30,6 +31,7 @@ class WatchlistAdapter: ListAdapter<WatchlistUiState, WatchlistAdapter.StockView
             is WatchlistUiState.Success -> {
                 binding.tvStockName.text = watchlistItem.stockName
                 binding.tvTodayPercent.text = watchlistItem.todayPercent
+                binding.tvStockSymbol.text = watchlistItem.stockKey.symbol
                 val colorRes = when (watchlistItem.todayTrend) {
                     StockTrend.UP -> R.color.stock_red
                     StockTrend.DOWN -> R.color.stock_green
@@ -51,8 +53,8 @@ class WatchlistAdapter: ListAdapter<WatchlistUiState, WatchlistAdapter.StockView
     }
 
     class StockViewHolder(
-        val viewBinding: ItemStockBinding
-    ): ViewHolder(viewBinding.root)
+        val viewBinding: ItemWatchlistBinding
+    ): RecyclerView.ViewHolder(viewBinding.root)
 
     class StockDiffCallback : DiffUtil.ItemCallback<WatchlistUiState>() {
 

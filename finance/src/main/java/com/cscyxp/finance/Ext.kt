@@ -42,8 +42,8 @@ fun String.toDoubleOrZero(): Double {
 fun Double.toPercent(): String {
     val percent = BigDecimal(String.format(Locale.US, "%.2f", this))
     return when {
-        percent > BigDecimal.ZERO -> "(+$percent%)"
-        percent < BigDecimal.ZERO -> "($percent%)"
+        percent > BigDecimal.ZERO -> "+$percent%"
+        percent < BigDecimal.ZERO -> "$percent%"
         else -> "0.00%"
     }
 }
@@ -51,8 +51,8 @@ fun Double.toPercent(): String {
 fun BigDecimal.toPercent(): String {
     val percent = this
     return when {
-        percent > BigDecimal.ZERO -> "(+$percent%)"
-        percent < BigDecimal.ZERO -> "($percent%)"
+        percent > BigDecimal.ZERO -> "+$percent%"
+        percent < BigDecimal.ZERO -> "$percent%"
         else -> "0.00%"
     }
 }
