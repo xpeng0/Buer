@@ -9,8 +9,10 @@ import com.cscyxp.finance.entity.StockInfo
 import com.cscyxp.finance.entity.StockKey
 import com.cscyxp.finance.entity.StockMinute
 import com.cscyxp.finance.entity.StockQuotation
+import com.cscyxp.finance.entity.WatchStock
 import com.cscyxp.finance.entity.WatchlistEntity
 import com.cscyxp.finance.hilt.IoDispatcher
+import com.cscyxp.finance.toWatchStock
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -47,20 +49,25 @@ class StockRepository @Inject constructor(
         return stockDatasource.getStockRecentKLine(stockKey, days)
     }
 
-    suspend fun getWatchlist(): List<WatchlistEntity> {
-        return watchlistDao.getWatchlist()
+    suspend fun getWatchlist(): List<WatchStock> {
+        return watchlistDao.getWatchlist().map { it.toWatchStock() }
     }
 
-    fun getWatchlistFlow(): Flow<List<WatchlistEntity>> {
-        return watchlistDao.getWatchlistFlow()
+    fun getWatchlistFlow(): Flow<List<WatchStock>> {
+        return watchlistDao.getWatchlistFlow().map {
+            it.map {
+                it.toWatchStock()
+            }
+        }
     }
 
     fun getWatchlistKLines(days: Int): Flow<List<KLineResult>> {
         return watchlistDao.getWatchlistFlow().map { watchlist ->
             coroutineScope {
                 watchlist.map {
+                    val stockKey = StockKey(it.symbol, it.exchange)
                     async {
-                        KLineResult(it.stockKey, getStockKLine(it.stockKey, days))
+                        KLineResult(stockKey, getStockKLine(stockKey, days))
                     }
                 }
             }.awaitAll()
@@ -76,7 +83,7 @@ class StockRepository @Inject constructor(
                     while (true) {
                         emit(
                             stockDatasource.getStockQuotation(
-                                stockKeys = watchlist.map { it.stockKey }
+                                stockKeys = watchlist.map { StockKey(it.symbol, it.exchange) }
                             )
                         )
                         delay(5000)
@@ -98,7 +105,8 @@ class StockRepository @Inject constructor(
 
     suspend fun addStockToWatchlist(stockKey: StockKey, stockName: String) {
         watchlistDao.insertOne(WatchlistEntity(
-            stockKey = stockKey,
+            symbol = stockKey.symbol,
+            exchange = stockKey.exchange,
             stockName = stockName
         ))
         updateCache(listOf(stockKey))
@@ -106,7 +114,8 @@ class StockRepository @Inject constructor(
 
     suspend fun removeStockFromWatchlist(stockKey: StockKey, stockName: String) {
         watchlistDao.deleteOne(WatchlistEntity(
-            stockKey = stockKey,
+            symbol = stockKey.symbol,
+            exchange = stockKey.exchange,
             stockName = stockName
         ))
     }

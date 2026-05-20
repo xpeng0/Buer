@@ -1,0 +1,284 @@
+package com.cscyxp.finance.details.composable
+
+import android.content.Context
+import android.view.View
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.cscyxp.finance.StockExchange
+import com.cscyxp.finance.details.ui.state.StockDetailUiState
+import com.cscyxp.finance.details.vm.StockDetailViewModel
+import com.cscyxp.finance.entity.StockKey
+import com.cscyxp.xpviews.TrendLineView
+
+@Composable
+fun StockDetailScreenRoute(
+    viewModel: StockDetailViewModel = hiltViewModel()
+) {
+    val state by viewModel.stateFlow.collectAsState(StockDetailUiState.Loading(StockKey("000001", StockExchange.SHANG_HAI)))
+    Scaffold(
+        containerColor = Color(0xFFF1F5F9) // 浅灰背景色
+    ) { paddingValues ->
+        Crossfade(
+            targetState = state,
+            label = "ScreenTransition",
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues) // 统一在这里解决全面屏安全区域，内层再也不用管了！
+        ) { currentState ->
+            when (currentState) {
+                is StockDetailUiState.Error -> {}
+                is StockDetailUiState.Loading -> {
+
+                }
+                is StockDetailUiState.Success -> {
+                    StockDetailScreenSuccess(currentState)
+                }
+            }
+        }
+
+    }
+
+}
+
+
+@Composable
+fun StockDetailScreenSuccess(
+    state: StockDetailUiState.Success,
+) {
+    // 模拟的页面状态 (实际项目中由 ViewModel 的 StateFlow 驱动)
+    val periods = listOf("分时", "近1月", "近3月", "近1年")
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+
+        // 头部信息 (股票名、代码)
+        item { StockHeader(symbol = state.stockKey.symbol, name = state.stockName) }
+
+        // 价格区域
+        item { PriceSection(price = state.currentPrice, change = state.todayPercent, isUp = true) }
+
+        // 时间周期选择器
+        item {
+            PeriodSelector(
+                periods = periods,
+                selectedIndex = 0,
+                onOptionSelected = {  }
+            )
+        }
+
+        // 🌟 你的自定义折线图桥接区域
+        item { CustomTrendLineChart(state.minutes) }
+
+        // 底部 2x2 统计网格
+        item { StatisticsGrid() }
+
+        item { Spacer(modifier = Modifier.height(32.dp)) }
+    }
+}
+
+// ==========================================
+// 2. 各个子组件拆解
+// ==========================================
+
+@Composable
+fun StockHeader(
+    symbol: String,
+    name: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, // ⬅️ 官方推荐的返回箭头
+            contentDescription = "返回上一页", // 必须写，为了无障碍访问 (TalkBack)
+            tint = Color.Black // 修改图标颜色
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column {
+            Text(
+                text = name,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0F172A)
+            )
+            Text(
+                text = symbol,
+                fontSize = 12.sp,
+                color = Color(0xFF64748B)
+            )
+        }
+        
+    }
+}
+
+@Composable
+fun PriceSection(price: String, change: String, isUp: Boolean) {
+    val changeColor = if (isUp) Color(0xFF22C55E) else Color(0xFFEF4444)
+
+    Row(verticalAlignment = Alignment.Bottom) {
+        Text(
+            text = "$$price",
+            fontSize = 30.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = Color(0xFF0F172A)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = change,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = changeColor,
+            modifier = Modifier.padding(bottom = 6.dp)
+        )
+    }
+}
+
+@Composable
+fun PeriodSelector(
+    periods: List<String>,
+    selectedIndex: Int = 0,
+    onOptionSelected: (Int) -> Unit = {}
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        periods.forEachIndexed { index, period ->
+            val isSelected = index == selectedIndex
+
+            // 🌟 使用基础的 Box 来完全控制背景、边框和形状
+            Box(
+                modifier = Modifier
+                    .width(60.dp)
+                    .clip(RoundedCornerShape(20.dp)) // 🌟 🌟 🌟 代码定义圆角形状，代替 XML shape
+                    .then(
+                        if (isSelected) {
+                            // 🌟 🌟 🌟 代码定义选中状态的背景，代替 XML selector
+                            Modifier.background(Color(0xFF1F2937)) // 深黑色背景
+                        } else {
+                            Modifier.background(Color.White) // 浅灰色背景
+                        }
+                    )
+                    .clickable { onOptionSelected(index) } // 🌟 使其可点击并更新状态
+                    .padding(vertical = 12.dp), // 🌟 按钮内部的上下内边距
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = period,
+                    // 🌟 🌟 🌟 代码根据选中状态改变文字颜色
+                    color = if (isSelected) Color.White else Color(0xFF6B7280), // 选中时白色，未选中时深灰色
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun CustomTrendLineChart(minutes: List<Float>) {
+    // 这是一个高度占位符，用来装你的自定义 View
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp)
+            .background(Color.White, RoundedCornerShape(16.dp))
+            .padding(16.dp)
+    ) {
+        // 🌟 核心：使用 AndroidView 桥接你以前写的传统 View
+        AndroidView(
+            factory = { context ->
+                // 初始化你的自定义 View
+                TrendLineView(context).apply {
+                    // 这里可以做一些一次性的初始化设置，比如线宽、颜色等
+                    // setLineColor(Color.GREEN)
+                    setData(minutes)
+                }
+            },
+            update = { view ->
+                // 当 Compose 状态更新时，这里会被调用
+                // 这里把最新的数据喂给你的旧 View
+                // view.setData(latestChartData)
+            },
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+@Composable
+fun StatisticsGrid() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            StatItem(label = "30-Day High", value = "$182.34")
+            Spacer(modifier = Modifier.width(50.dp))
+            StatItem(label = "30-Day Low", value = "$165.23")
+        }
+        Row(modifier = Modifier.fillMaxWidth()) {
+            StatItem(label = "Volume", value = "110.6M")
+            Spacer(modifier = Modifier.width(50.dp))
+            StatItem(label = "Market Cap", value = "$1.250B")
+        }
+    }
+}
+
+@Composable
+fun StatItem(label: String, value: String) {
+    Column(modifier =
+        Modifier
+            .height(70.dp)
+            .width(130.dp)
+            .background(
+                color = Color.White,
+                shape = RoundedCornerShape(15.dp)
+            )
+            .padding(10.dp),
+    ) {
+        Text(
+            text = label,
+            fontSize = 10.sp,
+            color = Color(0xFF64748B)
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(
+            text = value,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color(0xFF0F172A)
+        )
+    }
+
+}

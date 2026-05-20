@@ -3,6 +3,9 @@ package com.cscyxp.finance
 import android.util.Log
 import android.view.View
 import androidx.core.view.isVisible
+import com.cscyxp.finance.entity.StockKey
+import com.cscyxp.finance.entity.WatchStock
+import com.cscyxp.finance.entity.WatchlistEntity
 import com.cscyxp.finance.tencent.TencentKLineEntity
 import kotlinx.coroutines.delay
 import java.io.IOException
@@ -114,4 +117,11 @@ fun View.goneOrVisible() {
     } else {
         this.visibility = View.VISIBLE
     }
+}
+
+fun WatchlistEntity.toWatchStock(): WatchStock {
+    return WatchStock(
+        stockKey = StockKey(symbol, exchange),
+        stockName = stockName
+    )
 }

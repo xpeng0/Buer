@@ -10,6 +10,8 @@ import android.widget.GridLayout
 import android.widget.PopupMenu
 import android.widget.PopupWindow
 import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -50,6 +52,11 @@ class AddFragment: Fragment() {
     ): View {
         Log.i(TAG, "onCreateView: -----------")
         _binding = FragmentAddBinding.inflate(inflater, container, false)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(v.paddingLeft, systemBars.top, v.paddingRight, systemBars.bottom)
+            insets
+        }
         return binding.root
     }
 

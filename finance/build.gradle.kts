@@ -7,6 +7,11 @@ plugins {
     alias(libs.plugins.hilt.android)
     // safeargs插件 用于navigation跳转传参
     alias(libs.plugins.navigation.safeargs.kotlin)
+    // compose插件
+    alias(libs.plugins.compose.compiler)
+    // Parcelable 使用@Parcelize序列化插件
+    alias(libs.plugins.kotlin.parcelize)
+
 
 }
 
@@ -22,6 +27,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        compose = true
     }
 
 
@@ -88,7 +94,28 @@ dependencies {
     implementation (libs.androidx.navigation.fragment.ktx)
     implementation (libs.androidx.navigation.ui.ktx)
     implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.android.compiler)
 
     implementation(project(":xpviews"))
+
+    val composeBom = platform("androidx.compose:compose-bom:2026.04.01")
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+
+    // Choose one of the following:
+    // Material Design 3
+    implementation("androidx.compose.material3:material3")
+    // or only import the main APIs for the underlying toolkit systems,
+    // such as input and measurement/layout
+    implementation("androidx.compose.ui:ui")
+
+    // Android Studio Preview support
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // UI Tests
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    // 图标库
+    implementation("androidx.compose.material:material-icons-extended")
 }

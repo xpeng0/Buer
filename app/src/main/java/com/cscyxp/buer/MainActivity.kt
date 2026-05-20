@@ -28,18 +28,13 @@ private const val TAG = "MainActivity"
 @AndroidEntryPoint
 class MainActivity: AppCompatActivity() {
     private lateinit var binding :ActivityMainBinding
-    private val topFragmentIds: MutableSet<Int> = mutableSetOf(R.id.homeFragment, R.id.chartFragment, com.cscyxp.finance.R.id.financeFragment)
+    private val topFragmentIds: MutableSet<Int> = mutableSetOf(R.id.homeFragment, R.id.chartFragment, com.cscyxp.finance.R.id.watchlistFragment)
     @Inject lateinit var watchlistPreloader: Lazy<WatchlistPreloader>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
         setContentView(binding.root)
         binding.bottomNav.apply {
             post {

@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.graphics.toColorInt
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -36,11 +38,19 @@ class WatchlistFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentWatchlistBinding.inflate(inflater, container, false)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(v.paddingLeft, systemBars.top, v.paddingRight, systemBars.bottom)
+            insets
+        }
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val stockListAdapter = WatchlistAdapter()
+        val stockListAdapter = WatchlistAdapter {
+            val action = WatchlistFragmentDirections.actionWatchlistFragmentToDetailFragment(it.stockKey)
+            findNavController().navigate(action)
+        }
         val divider = MaterialDividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL).apply {
             // 🌟 1. 核心魔法：告诉它最后一行不要画线！
             // isLastItemDecorated = false
@@ -70,7 +80,7 @@ class WatchlistFragment: Fragment() {
             })
         }
         binding.tvSearch.setOnClickListener { v ->
-            findNavController().navigate(R.id.action_financeFragment_to_searchFragment)
+            findNavController().navigate(R.id.action_watchlistFragment_to_searchFragment)
         }
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {

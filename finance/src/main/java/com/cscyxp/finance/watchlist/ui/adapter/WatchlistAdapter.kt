@@ -10,7 +10,9 @@ import com.cscyxp.finance.StockTrend
 import com.cscyxp.finance.databinding.ItemWatchlistBinding
 import com.cscyxp.finance.watchlist.ui.state.WatchlistUiState
 
-class WatchlistAdapter: ListAdapter<WatchlistUiState, WatchlistAdapter.StockViewHolder>(StockDiffCallback()) {
+class WatchlistAdapter(
+    private val onItemClick: (WatchlistUiState) -> Unit
+): ListAdapter<WatchlistUiState, WatchlistAdapter.StockViewHolder>(StockDiffCallback()) {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -43,6 +45,9 @@ class WatchlistAdapter: ListAdapter<WatchlistUiState, WatchlistAdapter.StockView
                         idx % 3 == 0 || idx == watchlistItem.minutes.lastIndex
                     }.map { it.toFloat() }
                 )
+                binding.llStockInfo.setOnClickListener {
+                    onItemClick(watchlistItem)
+                }
             }
 
             is WatchlistUiState.Loading -> {

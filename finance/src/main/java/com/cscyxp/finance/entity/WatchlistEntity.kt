@@ -4,6 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
+import com.cscyxp.finance.StockExchange
 import com.cscyxp.finance.db.WatchlistConvert
 
 @Entity(
@@ -11,7 +12,7 @@ import com.cscyxp.finance.db.WatchlistConvert
     primaryKeys = ["symbol", "exchange"])
 @TypeConverters(value = [WatchlistConvert::class])
 data class WatchlistEntity(
-    @Embedded
-    val stockKey: StockKey,
+    val symbol: String,
+    val exchange: StockExchange,
     val stockName: String
 )
