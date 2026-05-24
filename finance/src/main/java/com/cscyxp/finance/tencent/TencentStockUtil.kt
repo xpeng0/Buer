@@ -169,6 +169,7 @@ object TencentStockUtil {
                 split[1].toDoubleOrNull()
             },
             currentPrice = qt[TencentDataSource.QT_INDEX_CURRENT_PRICE].asDouble,
+            preClosePrice = qt[TencentDataSource.QT_INDEX_YESTERDAY_CLOSE].asDouble,
             todayPercent = qt[TencentDataSource.QT_INDEX_PERCENT].asDouble,
             high = qt[TencentDataSource.QT_INDEX_HIGH].asDouble,
             low = qt[TencentDataSource.QT_INDEX_LOW].asDouble,

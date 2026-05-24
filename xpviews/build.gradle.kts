@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -9,9 +10,12 @@ android {
 
     defaultConfig {
         minSdk = 26
-        targetSdk = 35
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        compose = true
     }
 
     buildTypes {
@@ -40,4 +44,20 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    val composeBom = platform("androidx.compose:compose-bom:2026.04.01")
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+    // Material Design 3
+    implementation(libs.androidx.material3)
+    // or only import the main APIs for the underlying toolkit systems,
+    // such as input and measurement/layout
+    implementation(libs.androidx.ui)
+
+    // Android Studio Preview support
+    implementation(libs.androidx.ui.tooling.preview)
+    debugImplementation(libs.androidx.ui.tooling)
+
+    // UI Tests
+    debugImplementation(libs.androidx.ui.test.manifest)
 }

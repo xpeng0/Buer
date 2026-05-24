@@ -4,6 +4,7 @@ data class StockMinute(
     val stockKey: StockKey,
     val stockName: String,
     val currentPrice: Double,
+    val preClosePrice: Double,
     val todayPercent: Double,
     val high: Double,
     val low: Double,

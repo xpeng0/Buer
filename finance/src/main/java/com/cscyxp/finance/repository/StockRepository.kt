@@ -1,6 +1,5 @@
 package com.cscyxp.finance.repository
 
-import android.util.Log
 import com.cscyxp.finance.SearchRange
 import com.cscyxp.finance.StockDatasource
 import com.cscyxp.finance.dao.WatchlistDao
@@ -28,9 +27,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.collections.component1
@@ -158,6 +154,7 @@ class StockRepository @Inject constructor(
                     stockName = it.stockName,
                     stockKey = it.stockKey,
                     currentPrice = it.currentPrice,
+                    preClosePrice = it.preClosePrice,
                     todayPercent = it.todayPercent,
                     high = it.high,
                     low = it.low,
@@ -223,6 +220,7 @@ class StockRepository @Inject constructor(
                     stockName = it.stockName,
                     stockKey = it.stockKey,
                     currentPrice = it.currentPrice,
+                    preClosePrice = it.preClosePrice,
                     todayPercent = it.todayPercent,
                     high = it.high,
                     low = it.low,
@@ -243,6 +241,7 @@ class StockRepository @Inject constructor(
         val stockName: String,
         val stockKey: StockKey,
         val currentPrice: Double,
+        val preClosePrice: Double,
         val todayPercent: Double,
         val high: Double,
         val low: Double,

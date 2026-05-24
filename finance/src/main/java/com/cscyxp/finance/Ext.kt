@@ -125,3 +125,14 @@ fun WatchlistEntity.toWatchStock(): WatchStock {
         stockName = stockName
     )
 }
+
+fun Double.toTrend(): StockTrend {
+    val bigDecimal = this.toBigDecimal()
+    return if (bigDecimal > BigDecimal.ZERO) {
+        StockTrend.UP
+    } else if (bigDecimal < BigDecimal.ZERO) {
+        StockTrend.DOWN
+    } else {
+        StockTrend.FLAT
+    }
+}

@@ -11,6 +11,7 @@ import com.cscyxp.finance.format2f
 import com.cscyxp.finance.repository.StockRepository
 import com.cscyxp.finance.watchlist.ui.state.StockItemUiState
 import com.cscyxp.finance.toPercent
+import com.cscyxp.finance.toTrend
 import com.cscyxp.finance.watchlist.ui.state.WatchlistUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -103,13 +104,7 @@ class WatchlistViewModel @Inject constructor(
                         stockName = it.stockName,
                         currentPrice = cache.currentPrice.toString(),
                         todayPercent = cache.todayPercent.toPercent(),
-                        todayTrend = if (cache.todayPercent > 0) {
-                            StockTrend.UP
-                        } else if (cache.todayPercent < 0) {
-                            StockTrend.DOWN
-                        } else {
-                            StockTrend.FLAT
-                        },
+                        todayTrend = cache.todayPercent.toTrend(),
                         high = cache.high,
                         low = cache.low,
                         minutes = cache.minutes
@@ -186,18 +181,11 @@ class WatchlistViewModel @Inject constructor(
 fun StockEntity.toStockItemUiState(): StockItemUiState {
     val max = kLines.maxOfOrNull { it.close } ?: currentPrice
     val min = kLines.minOfOrNull { it.close } ?: currentPrice
-    val todayTrend = if (todayPercent > 0) {
-        StockTrend.UP
-    } else if (todayPercent < 0) {
-        StockTrend.DOWN
-    } else {
-        StockTrend.FLAT
-    }
     return StockItemUiState.Success(
         stockKey = stockKey,
         name = name,
         currentPrice = currentPrice.format2f(),
-        todayTrend = todayTrend,
+        todayTrend = todayPercent.toTrend(),
         todayPercent = todayPercent.toPercent(),
         highPrice = max.format2f(),
         highPercent = StockMathUtil.calculateChangePercent(currentPrice, max),

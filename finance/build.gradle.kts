@@ -103,19 +103,18 @@ dependencies {
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
-    // Choose one of the following:
     // Material Design 3
-    implementation("androidx.compose.material3:material3")
+    implementation(libs.androidx.material3)
     // or only import the main APIs for the underlying toolkit systems,
     // such as input and measurement/layout
-    implementation("androidx.compose.ui:ui")
+    implementation(libs.androidx.ui)
 
     // Android Studio Preview support
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation(libs.androidx.ui.tooling.preview)
+    debugImplementation(libs.androidx.ui.tooling)
 
     // UI Tests
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    debugImplementation(libs.androidx.ui.test.manifest)
     // 图标库
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.material.icons.extended)
 }

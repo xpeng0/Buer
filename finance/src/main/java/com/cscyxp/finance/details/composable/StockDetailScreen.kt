@@ -2,7 +2,10 @@ package com.cscyxp.finance.details.composable
 
 import android.content.Context
 import android.view.View
-import androidx.compose.animation.Crossfade
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -26,26 +30,29 @@ import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.cscyxp.finance.StockExchange
+import com.cscyxp.finance.R
+import com.cscyxp.finance.StockTrend
 import com.cscyxp.finance.details.ui.state.StockDetailUiState
 import com.cscyxp.finance.details.vm.StockDetailViewModel
-import com.cscyxp.finance.entity.StockKey
 import com.cscyxp.xpviews.TrendLineView
+import com.cscyxp.xpviews.composable.TrendLineChart
 
 @Composable
 fun StockDetailScreenRoute(
     viewModel: StockDetailViewModel = hiltViewModel()
 ) {
-    val state by viewModel.stateFlow.collectAsState(StockDetailUiState.Loading(StockKey("000001", StockExchange.SHANG_HAI)))
+    val state by viewModel.stateFlow.collectAsState()
     Scaffold(
         containerColor = Color(0xFFF1F5F9) // 浅灰背景色
     ) { paddingValues ->
-        Crossfade(
+        AnimatedContent(
             targetState = state,
+            contentKey = { it::class },
+            transitionSpec = { fadeIn() togetherWith fadeOut() },
             label = "ScreenTransition",
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues) // 统一在这里解决全面屏安全区域，内层再也不用管了！
+                .padding(paddingValues)
         ) { currentState ->
             when (currentState) {
                 is StockDetailUiState.Error -> {}
@@ -53,7 +60,10 @@ fun StockDetailScreenRoute(
 
                 }
                 is StockDetailUiState.Success -> {
-                    StockDetailScreenSuccess(currentState)
+                    StockDetailScreenSuccess(
+                        state = currentState,
+                        onPointSelected = viewModel::onPointSelected
+                    )
                 }
             }
         }
@@ -66,6 +76,7 @@ fun StockDetailScreenRoute(
 @Composable
 fun StockDetailScreenSuccess(
     state: StockDetailUiState.Success,
+    onPointSelected: (Int?) -> Unit,
 ) {
     // 模拟的页面状态 (实际项目中由 ViewModel 的 StateFlow 驱动)
     val periods = listOf("分时", "近1月", "近3月", "近1年")
@@ -81,7 +92,7 @@ fun StockDetailScreenSuccess(
         item { StockHeader(symbol = state.stockKey.symbol, name = state.stockName) }
 
         // 价格区域
-        item { PriceSection(price = state.currentPrice, change = state.todayPercent, isUp = true) }
+        item { PriceSection(price = state.displayPrice, change = state.displayPercent, trend = state.todayTrend) }
 
         // 时间周期选择器
         item {
@@ -93,7 +104,11 @@ fun StockDetailScreenSuccess(
         }
 
         // 🌟 你的自定义折线图桥接区域
-        item { CustomTrendLineChart(state.minutes) }
+        item { CustomTrendLineChart(
+            minutes = state.minutes,
+            touchIndex = state.touchInfo?.index,
+            onPointSelected = onPointSelected,
+            ) }
 
         // 底部 2x2 统计网格
         item { StatisticsGrid() }
@@ -139,8 +154,16 @@ fun StockHeader(
 }
 
 @Composable
-fun PriceSection(price: String, change: String, isUp: Boolean) {
-    val changeColor = if (isUp) Color(0xFF22C55E) else Color(0xFFEF4444)
+fun PriceSection(
+    price: String,
+    change: String,
+    trend: StockTrend
+) {
+    val changeColor = when (trend) {
+        StockTrend.UP -> colorResource(R.color.stock_red)
+        StockTrend.DOWN -> colorResource(R.color.stock_green)
+        StockTrend.FLAT -> colorResource(R.color.stock_flat)
+    }
 
     Row(verticalAlignment = Alignment.Bottom) {
         Text(
@@ -205,8 +228,11 @@ fun PeriodSelector(
 }
 
 @Composable
-fun CustomTrendLineChart(minutes: List<Float>) {
-    // 这是一个高度占位符，用来装你的自定义 View
+fun CustomTrendLineChart(
+    minutes: List<Float>,
+    touchIndex: Int? = null,
+    onPointSelected: (Int?) -> Unit,
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -214,22 +240,12 @@ fun CustomTrendLineChart(minutes: List<Float>) {
             .background(Color.White, RoundedCornerShape(16.dp))
             .padding(16.dp)
     ) {
-        // 🌟 核心：使用 AndroidView 桥接你以前写的传统 View
-        AndroidView(
-            factory = { context ->
-                // 初始化你的自定义 View
-                TrendLineView(context).apply {
-                    // 这里可以做一些一次性的初始化设置，比如线宽、颜色等
-                    // setLineColor(Color.GREEN)
-                    setData(minutes)
-                }
-            },
-            update = { view ->
-                // 当 Compose 状态更新时，这里会被调用
-                // 这里把最新的数据喂给你的旧 View
-                // view.setData(latestChartData)
-            },
-            modifier = Modifier.fillMaxSize()
+        TrendLineChart(
+            modifier = Modifier.fillMaxSize(),
+            minutes = minutes,
+            totalPoints = 240,
+            touchIndex = touchIndex,
+            onPointSelected = onPointSelected
         )
     }
 }
@@ -238,18 +254,21 @@ fun CustomTrendLineChart(minutes: List<Float>) {
 fun StatisticsGrid() {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+            .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
             StatItem(label = "30-Day High", value = "$182.34")
-            Spacer(modifier = Modifier.width(50.dp))
             StatItem(label = "30-Day Low", value = "$165.23")
         }
-        Row(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
             StatItem(label = "Volume", value = "110.6M")
-            Spacer(modifier = Modifier.width(50.dp))
             StatItem(label = "Market Cap", value = "$1.250B")
         }
     }
