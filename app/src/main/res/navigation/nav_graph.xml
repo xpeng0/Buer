@@ -6,10 +6,22 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.cscyxp.buer.HomeFragment"
+        android:name="com.cscyxp.buer.home.ui.HomeFragment"
         android:label="Home">
         <action
-            android:id="@+id/action_homeFragment_to_detailFragment"
+            android:id="@+id/action_homeFragment_to_transactionFragment"
+            app:destination="@id/transactionFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_finance"
+            app:destination="@id/finance_nav_graph" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/transactionFragment"
+        android:name="com.cscyxp.buer.TransactionFragment"
+        android:label="Bill">
+        <action
+            android:id="@+id/action_transactionFragment_to_addFragment"
             app:destination="@id/addFragment" />
     </fragment>
 

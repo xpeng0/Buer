@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "HomeFragment"
 @AndroidEntryPoint
-class HomeFragment: Fragment() {
+class TransactionFragment: Fragment() {
 
     // 只能在 onCreateView/onViewCreated 之间访问
     private var _binding: FragmentHomeBinding? = null
@@ -67,7 +67,7 @@ class HomeFragment: Fragment() {
 
 
         binding.btnAdd.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_detailFragment)
+            findNavController().navigate(R.id.action_transactionFragment_to_addFragment)
         }
         val adapter = DailyTransactionAdapter { adapter, position, item, binding ->
             createCategoryChangeDialog(5) {category, dialog ->

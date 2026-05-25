@@ -28,7 +28,7 @@ private const val TAG = "MainActivity"
 @AndroidEntryPoint
 class MainActivity: AppCompatActivity() {
     private lateinit var binding :ActivityMainBinding
-    private val topFragmentIds: MutableSet<Int> = mutableSetOf(R.id.homeFragment, R.id.chartFragment, com.cscyxp.finance.R.id.watchlistFragment)
+    private val topFragmentIds: MutableSet<Int> = mutableSetOf(R.id.transactionFragment, R.id.chartFragment)
     @Inject lateinit var watchlistPreloader: Lazy<WatchlistPreloader>
 
     override fun onCreate(savedInstanceState: Bundle?) {
