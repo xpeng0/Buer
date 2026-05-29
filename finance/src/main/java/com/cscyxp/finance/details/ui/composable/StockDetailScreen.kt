@@ -1,13 +1,10 @@
-package com.cscyxp.finance.details.composable
+package com.cscyxp.finance.details.ui.composable
 
-import android.content.Context
-import android.view.View
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -23,18 +20,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cscyxp.finance.R
 import com.cscyxp.finance.StockTrend
 import com.cscyxp.finance.details.ui.state.StockDetailUiState
 import com.cscyxp.finance.details.vm.StockDetailViewModel
-import com.cscyxp.xpviews.TrendLineView
 import com.cscyxp.xpviews.composable.TrendLineChart
 
 @Composable

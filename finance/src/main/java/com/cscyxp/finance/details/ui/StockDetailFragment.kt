@@ -4,18 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
-import com.cscyxp.finance.details.composable.StockDetailScreenRoute
+import com.cscyxp.finance.details.ui.composable.StockDetailScreenRoute
 
 class StockDetailFragment: Fragment(
 
