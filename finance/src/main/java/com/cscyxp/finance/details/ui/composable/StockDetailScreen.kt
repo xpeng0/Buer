@@ -31,6 +31,7 @@ import com.cscyxp.xpviews.composable.TrendLineChart
 
 @Composable
 fun StockDetailScreenRoute(
+    onBackClick: () -> Unit = {},
     viewModel: StockDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.stateFlow.collectAsState()
@@ -54,7 +55,8 @@ fun StockDetailScreenRoute(
                 is StockDetailUiState.Success -> {
                     StockDetailScreenSuccess(
                         state = currentState,
-                        onPointSelected = viewModel::onPointSelected
+                        onPointSelected = viewModel::onPointSelected,
+                        onBackClick = onBackClick
                     )
                 }
             }
@@ -69,8 +71,8 @@ fun StockDetailScreenRoute(
 fun StockDetailScreenSuccess(
     state: StockDetailUiState.Success,
     onPointSelected: (Int?) -> Unit,
+    onBackClick: () -> Unit = {},
 ) {
-    // 模拟的页面状态 (实际项目中由 ViewModel 的 StateFlow 驱动)
     val periods = listOf("分时", "近1月", "近3月", "近1年")
 
     LazyColumn(
@@ -81,7 +83,7 @@ fun StockDetailScreenSuccess(
     ) {
 
         // 头部信息 (股票名、代码)
-        item { StockHeader(symbol = state.stockKey.symbol, name = state.stockName) }
+        item { StockHeader(symbol = state.stockKey.symbol, name = state.stockName, onBackClick = onBackClick) }
 
         // 价格区域
         item { PriceSection(price = state.displayPrice, change = state.displayPercent, trend = state.todayTrend) }
@@ -116,14 +118,17 @@ fun StockDetailScreenSuccess(
 @Composable
 fun StockHeader(
     symbol: String,
-    name: String
+    name: String,
+    onBackClick: () -> Unit = {}
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, // ⬅️ 官方推荐的返回箭头
-            contentDescription = "返回上一页", // 必须写，为了无障碍访问 (TalkBack)
-            tint = Color.Black // 修改图标颜色
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = "返回上一页",
+            tint = Color.Black,
+            modifier = Modifier.clickable { onBackClick() }
         )
 
         Spacer(modifier = Modifier.width(16.dp))

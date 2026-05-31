@@ -83,7 +83,7 @@ fun StockWatchlistScreen(
         ) {
             items(
                 items = uiStates,
-                key = { it.stockKey }
+                key = { it.stockKey.toString() }
             ) { state ->
                 StockListItem(
                     state = state,

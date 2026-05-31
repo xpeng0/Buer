@@ -5,12 +5,10 @@ plugins {
     alias(libs.plugins.ksp)
     // 2. 加上 hilt 插件
     alias(libs.plugins.hilt.android)
-    // safeargs插件 用于navigation跳转传参
-    alias(libs.plugins.navigation.safeargs.kotlin)
+    // safeargs removed — now using Compose Navigation
     // compose插件
     alias(libs.plugins.compose.compiler)
-    // Parcelable 使用@Parcelize序列化插件
-    alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.kotlin.serialization)
 
 
 }
@@ -26,7 +24,6 @@ android {
         consumerProguardFiles("consumer-rules.pro")
     }
     buildFeatures {
-        viewBinding = true
         compose = true
     }
 
@@ -56,9 +53,7 @@ tasks.withType<Test> {
 dependencies {
     // ViewModel 核心库
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    // 如果要在 Activity / Fragment 中用 viewModels() 这种 Kotlin 扩展
     implementation (libs.androidx.activity.ktx)
-    implementation (libs.androidx.fragment.ktx)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -91,8 +86,8 @@ dependencies {
     // MockWebServer (版本号尽量与你项目里的 OkHttp 版本保持一致)
     testImplementation (libs.mockwebserver)
 
-    implementation (libs.androidx.navigation.fragment.ktx)
-    implementation (libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.android.compiler)

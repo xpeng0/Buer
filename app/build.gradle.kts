@@ -1,11 +1,12 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.navigation.safeargs.kotlin)
+    // safeargs removed — now using Compose Navigation
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -14,7 +15,6 @@ android {
 
     buildFeatures {
         compose = true
-        viewBinding = true
     }
 
     defaultConfig {
@@ -64,10 +64,10 @@ dependencies {
     implementation(libs.gson)
     implementation (project(":xpviews"))
     implementation(project(":finance"))
+    implementation(project(":feature:bookkeeping"))
 
     // 如果要在 Activity / Fragment 中用 viewModels() 这种 Kotlin 扩展
     implementation (libs.androidx.activity.ktx)
-    implementation (libs.androidx.fragment.ktx)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.mockk)
     androidTestImplementation(libs.androidx.junit)
@@ -78,9 +78,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     // Room 编译器（Kotlin 用 kapt，Java 用 annotationProcessor）
     ksp (libs.androidx.room.compiler)
-    // 给 KSP 强行“喂”新版序列化
-    ksp(libs.kotlinx.serialization.core)
-    ksp(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.serialization.json)
 
     // 协程核心库
     implementation(libs.kotlinx.coroutines.android)
@@ -89,8 +87,8 @@ dependencies {
     // 测试协程的工具库
     testImplementation (libs.turbine)
 
-    implementation (libs.androidx.navigation.fragment.ktx)
-    implementation (libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.hilt.navigation.compose)
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
 

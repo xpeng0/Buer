@@ -4,11 +4,13 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.cscyxp.finance.StockExchange
 import com.cscyxp.finance.details.ui.state.StockDetailUiState
 import com.cscyxp.finance.details.ui.state.TouchInfo
 import com.cscyxp.finance.entity.StockKey
 import com.cscyxp.finance.format2f
+import com.cscyxp.finance.navigation.FinanceDetail
 import com.cscyxp.finance.repository.StockRepository
 import com.cscyxp.finance.toPercent
 import com.cscyxp.finance.toTrend
@@ -27,15 +29,18 @@ import javax.inject.Inject
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class StockDetailViewModel @Inject constructor(
-    private val handle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val stockRepository: StockRepository
 ) : ViewModel() {
 
-    val stockKeyFlow = handle.getStateFlow("stockKey", StockKey("", StockExchange.SHANG_HAI))
+    private val route = savedStateHandle.toRoute<FinanceDetail>()
+    private val _stockKey = MutableStateFlow(
+        StockKey(route.symbol, StockExchange.valueOf(route.exchange))
+    )
     private val _touchIndex = MutableStateFlow<Int?>(null)
 
     val stateFlow: StateFlow<StockDetailUiState> = combine(
-        stockKeyFlow,
+        _stockKey,
         stockRepository.watchlistCacheMap,
         _touchIndex,
     ) { key, cacheMap, touchIndex ->
@@ -73,10 +78,8 @@ class StockDetailViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = StockDetailUiState.Loading(stockKeyFlow.value)
+        initialValue = StockDetailUiState.Loading(_stockKey.value)
     )
-
-
 
     init {
         startPolling()
@@ -88,7 +91,7 @@ class StockDetailViewModel @Inject constructor(
 
     fun startPolling() {
         viewModelScope.launch {
-            stockKeyFlow.collectLatest { key ->
+            _stockKey.collectLatest { key ->
                 if (key.symbol.isNotEmpty()) {
                     while (true) {
                         stockRepository.updateCacheWithQt(listOf(key))
@@ -98,8 +101,5 @@ class StockDetailViewModel @Inject constructor(
             }
         }
     }
-
-
-
 
 }

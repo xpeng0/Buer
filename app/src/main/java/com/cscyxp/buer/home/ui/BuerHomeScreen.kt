@@ -297,7 +297,7 @@ fun BuerHomeScreen(
         ) {
             // 头部欢迎语区域
             item {
-                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                Column(modifier = Modifier.padding(bottom = 8.dp)) {
                     Text(text = "5月24日 星期日", color = Color(0xFF6B7280), fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
