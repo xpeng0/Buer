@@ -1,0 +1,42 @@
+[
+  { "id": 10000,  "name": "默认",       "type": 0, "icon": "ic_default" },
+
+  { "id": 1,  "name": "餐饮",       "type": 0, "icon": "ic_food" },
+  { "id": 2,  "name": "健身",       "type": 0, "icon": "ic_fitness" },
+  { "id": 3,  "name": "购物",       "type": 0, "icon": "ic_shopping" },
+
+  { "id": 6,  "name": "通讯",       "type": 0, "icon": "ic_phone" },
+  { "id": 7,  "name": "游戏",       "type": 0, "icon": "ic_game" },
+  { "id": 8,  "name": "理发",       "type": 0, "icon": "ic_haircut" },
+
+  { "id": 10, "name": "交通",       "type": 0, "icon": "ic_transport" },
+  { "id": 11, "name": "旅游",       "type": 0, "icon": "ic_travel" },
+  { "id": 12, "name": "宠物",       "type": 0, "icon": "ic_pet" },
+  { "id": 13, "name": "教育",       "type": 0, "icon": "ic_book" },
+  { "id": 14, "name": "数码",       "type": 0, "icon": "ic_digital" },
+  { "id": 15, "name": "礼物",       "type": 0, "icon": "ic_gift" },
+  { "id": 16, "name": "慈善",       "type": 0, "icon": "ic_charity" },
+  { "id": 17, "name": "日用品",     "type": 0, "icon": "ic_daily" },
+  { "id": 18, "name": "医疗",       "type": 0, "icon": "ic_medicine" },
+  { "id": 19, "name": "保险",       "type": 0, "icon": "ic_insurance" },
+  { "id": 20, "name": "其他支出",   "type": 0, "icon": "ic_more" },
+
+  { "id": 101, "parentId": 1, "name": "麦当劳",   "type": 0, "icon": "ic_food" },
+  { "id": 102, "parentId": 1, "name": "食堂",   "type": 0, "icon": "ic_food" },
+  { "id": 103, "parentId": 1, "name": "外卖",   "type": 0, "icon": "ic_food" },
+  { "id": 104, "parentId": 1, "name": "餐厅",   "type": 0, "icon": "ic_food" },
+  { "id": 105,  "parentId": 1, "name": "奶茶",       "type": 0, "icon": "ic_bubble_tea" },
+  { "id": 106,  "parentId": 1, "name": "咖啡",     "type": 0, "icon": "ic_coffee" },
+  { "id": 107,  "parentId": 1, "name": "饮品",       "type": 0, "icon": "ic_drink" },
+
+  { "id": 21, "name": "工资",       "type": 1, "icon": "ic_salary" },
+  { "id": 22, "name": "奖金",       "type": 1, "icon": "ic_bonus" },
+  { "id": 23, "name": "投资收益",   "type": 1, "icon": "ic_investment" },
+  { "id": 24, "name": "兼职收入",   "type": 1, "icon": "ic_part_time" },
+  { "id": 25, "name": "礼金",       "type": 1, "icon": "ic_gift_income" },
+  { "id": 26, "name": "退款",       "type": 1, "icon": "ic_refund" },
+  { "id": 27, "name": "租金收入",   "type": 1, "icon": "ic_rent" },
+  { "id": 28, "name": "利息收入",   "type": 1, "icon": "ic_interest" },
+  { "id": 29, "name": "奖金分红",   "type": 1, "icon": "ic_dividend" },
+  { "id": 30, "name": "其他收入",   "type": 1, "icon": "ic_other_income" }
+]

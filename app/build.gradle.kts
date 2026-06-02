@@ -65,6 +65,7 @@ dependencies {
     implementation (project(":xpviews"))
     implementation(project(":finance"))
     implementation(project(":feature:bookkeeping"))
+    implementation(project(":feature:fitness"))
 
     // 如果要在 Activity / Fragment 中用 viewModels() 这种 Kotlin 扩展
     implementation (libs.androidx.activity.ktx)

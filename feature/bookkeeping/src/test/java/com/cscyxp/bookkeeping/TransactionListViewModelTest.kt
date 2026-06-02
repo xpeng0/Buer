@@ -1,12 +1,13 @@
 package com.cscyxp.bookkeeping
 
+import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.cscyxp.bookkeeping.data.repository.CategoryRepository
 import com.cscyxp.bookkeeping.data.repository.TransactionRepository
 import com.cscyxp.bookkeeping.domain.Category
 import com.cscyxp.bookkeeping.domain.DailyTransaction
-import com.cscyxp.bookkeeping.domain.Transaction
 import com.cscyxp.bookkeeping.domain.TransactionFilter
+import com.cscyxp.bookkeeping.ui.state.TransactionListUiState
 import com.cscyxp.bookkeeping.util.TimeHelper
 import com.cscyxp.bookkeeping.utils.CategoryGenerator
 import com.cscyxp.bookkeeping.utils.TransactionGenerator
@@ -28,7 +29,6 @@ import kotlinx.coroutines.test.setMain
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.assertEquals
 import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -37,14 +37,18 @@ class TransactionListViewModelTest {
     private val categoryRepository = mockk<CategoryRepository>(relaxed = true)
     private val timeHelper = mockk<TimeHelper>(relaxed = true)
     private val testDispatcher = UnconfinedTestDispatcher()
-    val year = 1111
-    val month = 1
-    val category = Category(id = 1L, name = "随机", type = 0, icon = "")
-    val filter = TransactionFilter(month = month, year = year, category = category)
+    private val year = 1111
+    private val month = 1
+    private val category = Category(id = 1L, name = "随机", type = 0, icon = "")
+    private val filter = TransactionFilter(month = month, year = year, category = category)
 
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+        every {
+            transactionRepository.getDailyTransactionsFlowByFilter(any(), any(), any())
+        } returns flowOf(emptyList())
+        every { categoryRepository.getTopCategories(any()) } returns flowOf(emptyList())
     }
 
     @AfterEach
@@ -52,132 +56,55 @@ class TransactionListViewModelTest {
         Dispatchers.resetMain()
     }
 
-    fun createViewModel(): TransactionListViewModel {
+    private fun createViewModel(): TransactionListViewModel {
         return TransactionListViewModel(transactionRepository, categoryRepository, timeHelper)
     }
 
     @Test
-    fun `todayExpend - should calculate expense sum correctly`() = runTest {
-        val fakeFlow = MutableStateFlow(emptyList<Transaction>())
-        every {
-            transactionRepository.getTransactionsFlowByFilter(any(), any())
-        } returns fakeFlow
-
-        val viewModel = createViewModel()
-
-        viewModel.todayExpend.test {
-            assertEquals("0.00", awaitItem())
-
-            val generateTransactions = TransactionGenerator.generateRandomTransactions(incomeCount = 10, expenseCount = 20)
-            fakeFlow.emit(generateTransactions.transactions)
-
-            awaitItem().shouldBe(
-                expected = generateTransactions.totalExpense,
-                message = "todayExpend should calculate expense sum correctly"
-            )
-        }
-    }
-
-    @Test
-    fun `todayExpend - should use correct time args`() {
-        val startTime = 1000L
-        val endTime = 2000L
-        every { timeHelper.getTodayStartTimeMillis() } returns startTime
-        every { timeHelper.getTodayEndTimeMillis() } returns endTime
-
-        createViewModel()
-
-        verify(exactly = 1) {
-            transactionRepository.getTransactionsFlowByFilter(startTime, endTime)
-        }
-    }
-
-    @Test
-    fun `monthExpend - should calculate expense sum correctly`() = runTest {
-        val fakeFlow = MutableStateFlow(emptyList<Transaction>())
-        every {
-            transactionRepository.getTransactionsFlowByFilter(any(), any())
-        } returns fakeFlow
-
-        val viewModel = createViewModel()
-
-        viewModel.monthExpend.test {
-            assertEquals("0.00", awaitItem())
-
-            val generateTransactions = TransactionGenerator.generateRandomTransactions(incomeCount = 10, expenseCount = 20)
-            fakeFlow.emit(generateTransactions.transactions)
-
-            awaitItem().shouldBe(
-                expected = generateTransactions.totalExpense,
-                message = "monthExpend should calculate expense sum correctly"
-            )
-        }
-    }
-
-    @Test
-    fun `monthExpend - should use correct time args`() {
-        val startTime = 3000L
-        val endTime = 4000L
-        every { timeHelper.getTodayStartTimeMillis() } returns startTime
-        every { timeHelper.getTodayEndTimeMillis() } returns endTime
-
-        createViewModel()
-
-        verify(exactly = 1) {
-            transactionRepository.getTransactionsFlowByFilter(startTime, endTime)
-        }
-    }
-
-    @Test
-    fun `homeUiState - should emit initial empty state`() = runTest {
-        val fakeData = TransactionGenerator.generateDailyTransactions()
-
+    fun `uiState - should emit loading before content`() = runTest {
         every {
             transactionRepository.getDailyTransactionsFlowByFilter(any(), any(), any())
         } returns flow {
             delay(100)
-            emit(fakeData.dailyTransactions)
+            emit(emptyList())
         }
 
         val viewModel = createViewModel()
 
-        viewModel.homeUiState.test {
-            val initState = awaitItem()
-            initState.expenseSumStr.shouldBe("0.00")
-            initState.incomeSumStr.shouldBe("0.00")
-            initState.balanceStr.shouldBe("0.00")
-            initState.dailyTransactions.shouldBe(emptyList())
-
+        viewModel.uiState.test {
+            awaitItem().shouldBe(TransactionListUiState.Loading)
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `homeUiState - should calculate sum correctly`() = runTest {
+    fun `uiState - should calculate sum correctly`() = runTest {
         val fakeFlow = MutableStateFlow(emptyList<DailyTransaction>())
-
         every {
             transactionRepository.getDailyTransactionsFlowByFilter(any(), any(), any())
         } returns fakeFlow
 
         val viewModel = createViewModel()
 
-        viewModel.homeUiState.test {
-            awaitItem()
+        viewModel.uiState.test {
+            awaitContent()
 
             val generateDailyTransactions = TransactionGenerator.generateDailyTransactions()
             fakeFlow.emit(generateDailyTransactions.dailyTransactions)
 
-            val homeUiState = awaitItem()
-            homeUiState.incomeSumStr.shouldBe(generateDailyTransactions.totalIncome)
-            homeUiState.expenseSumStr.shouldBe(generateDailyTransactions.totalExpense)
-            homeUiState.balanceStr.shouldBe(generateDailyTransactions.balance)
-            homeUiState.dailyTransactions.shouldBe(expected = generateDailyTransactions.dailyTransactions, isPrint = false)
+            val content = awaitContent()
+            content.incomeSumStr.shouldBe(generateDailyTransactions.totalIncome)
+            content.expenseSumStr.shouldBe(generateDailyTransactions.totalExpense)
+            content.balanceStr.shouldBe(generateDailyTransactions.balance)
+            content.dailyTransactions.shouldBe(
+                expected = generateDailyTransactions.dailyTransactions,
+                isPrint = false
+            )
         }
     }
 
     @Test
-    fun `homeUiState - should pass filter to repository correctly`() = runTest {
+    fun `uiState - should pass filter to repository correctly`() = runTest {
         val startMonth = 1000L
         val endMonth = 2000L
         every { timeHelper.getMonthStartTimeMillis(year, month) } returns startMonth
@@ -185,10 +112,12 @@ class TransactionListViewModelTest {
 
         val viewModel = createViewModel()
 
-        viewModel.homeUiState.test {
-            awaitItem()
+        viewModel.uiState.test {
+            awaitContent()
             viewModel.updateFilter(filter)
+            val content = awaitContent()
 
+            content.filter.shouldBe(filter)
             verify(exactly = 1) {
                 timeHelper.getMonthStartTimeMillis(year, month)
                 timeHelper.getMonthEndTimeMillis(year, month)
@@ -198,108 +127,46 @@ class TransactionListViewModelTest {
     }
 
     @Test
-    fun `updateFilter - should update filter correctly`() {
+    fun `set filter - should update uiState filter correctly`() = runTest {
         val viewModel = createViewModel()
-
-        viewModel.updateFilter(filter)
-
-        viewModel.getMonth().shouldBe(month)
-        viewModel.getYear().shouldBe(year)
-        viewModel.getCategory().shouldBe(category)
-    }
-
-    @Test
-    fun `set filter - should invoke updateFilter correctly`() {
-        val viewModel = createViewModel()
-        val filter = viewModel.filter.value
-        val newYear = 2222
+        val currentYear = LocalDate.now().year
         val newMonth = 2
         val newCategory = category.copy(id = 2L)
 
-        viewModel.setMonth(newMonth)
-        viewModel.filter.value.shouldBe(filter.copy(month = newMonth))
+        viewModel.uiState.test {
+            awaitContent()
 
-        viewModel.setYear(newYear)
-        viewModel.filter.value.shouldBe(filter.copy(month = newMonth, year = newYear))
+            viewModel.setMonth(newMonth)
+            awaitContent().filter.shouldBe(TransactionFilter(month = newMonth, year = currentYear))
 
-        viewModel.setCategory(newCategory)
-        viewModel.filter.value.shouldBe(filter.copy(month = newMonth, year = newYear, category = newCategory))
-    }
+            viewModel.setYear(year)
+            awaitContent().filter.shouldBe(TransactionFilter(month = newMonth, year = year))
 
-    @Test
-    fun `filter - the initial value should be current time`() = runTest {
-        val currentMonth = LocalDate.now().monthValue
-        val currentYear = LocalDate.now().year
-        val viewmodel = createViewModel()
-
-        viewmodel.filter.test {
-            val initItem = awaitItem()
-            initItem.year.shouldBe(currentYear)
-            initItem.month.shouldBe(currentMonth)
-            initItem.category.shouldBe(null)
-        }
-
-        viewmodel.homeUiState.test {
-            awaitItem()
-
-            verify(exactly = 1) {
-                timeHelper.getMonthStartTimeMillis(currentYear, currentMonth)
-                timeHelper.getMonthEndTimeMillis(currentYear, currentMonth)
-            }
+            viewModel.setCategory(newCategory)
+            awaitContent().filter.shouldBe(TransactionFilter(month = newMonth, year = year, category = newCategory))
         }
     }
 
     @Test
-    fun `categoryFilter - should emit type correctly`() = runTest {
+    fun `category dialog filter - should emit categories by type`() = runTest {
+        val expendCategories = CategoryGenerator.generatorRandomCategories(count = 10, type = Category.TYPE_EXPAND)
+        val incomeCategories = CategoryGenerator.generatorRandomCategories(count = 10, type = Category.TYPE_INCOME)
+
+        every { categoryRepository.getTopCategories(Category.TYPE_EXPAND) } returns flowOf(expendCategories)
+        every { categoryRepository.getTopCategories(Category.TYPE_INCOME) } returns flowOf(incomeCategories)
+
         val viewModel = createViewModel()
 
-        viewModel.categoryFilter.test {
-            val initialValue = awaitItem()
-            initialValue.shouldBe(Category.TYPE_EXPAND)
+        viewModel.uiState.test {
+            awaitContent().topCategories.shouldBe(expendCategories, isPrint = false)
 
             viewModel.setCategoryDialogFilterType(Category.TYPE_INCOME)
+            val content = awaitContent()
 
-            awaitItem().shouldBe(Category.TYPE_INCOME)
-        }
-    }
-
-    @Test
-    fun `topCategoriesByFilter - should emit categories correctly`() = runTest {
-        val fakeFlow = MutableStateFlow<List<Category>>(emptyList())
-        val fakeCategories = CategoryGenerator.generatorRandomCategories(count = 10)
-        every {
-            categoryRepository.getTopCategories(any())
-        } returns fakeFlow
-
-        val viewModel = createViewModel()
-
-        viewModel.topCategoriesByFilter.test {
-            awaitItem()
-
-            fakeFlow.emit(fakeCategories)
-            awaitItem().shouldBe(fakeCategories, isPrint = false)
-        }
-    }
-
-    @Test
-    fun `topCategoriesByFilter - should pass type to repository correctly`() = runTest {
-        val expendCategory = CategoryGenerator.generatorRandomCategories(count = 10, type = Category.TYPE_EXPAND)
-        val incomeCategory = CategoryGenerator.generatorRandomCategories(count = 10, type = Category.TYPE_INCOME)
-
-        every { categoryRepository.getTopCategories(Category.TYPE_EXPAND) } returns flowOf(expendCategory)
-        every { categoryRepository.getTopCategories(Category.TYPE_INCOME) } returns flowOf(incomeCategory)
-
-        val viewModel = createViewModel()
-        val type = Category.TYPE_INCOME
-
-        viewModel.topCategoriesByFilter.test {
-            awaitItem()
-
-            viewModel.setCategoryDialogFilterType(type)
-
-            awaitItem().shouldBe(incomeCategory)
+            content.categoryDialogFilterType.shouldBe(Category.TYPE_INCOME)
+            content.topCategories.shouldBe(incomeCategories, isPrint = false)
             verify(exactly = 1) {
-                categoryRepository.getTopCategories(type)
+                categoryRepository.getTopCategories(Category.TYPE_INCOME)
             }
         }
     }
@@ -312,6 +179,16 @@ class TransactionListViewModelTest {
 
         coVerify(exactly = 1) {
             transactionRepository.updateTransaction(fakeTransaction)
+        }
+    }
+
+    private suspend fun ReceiveTurbine<TransactionListUiState>.awaitContent(): TransactionListUiState.Content {
+        while (true) {
+            when (val item = awaitItem()) {
+                is TransactionListUiState.Content -> return item
+                is TransactionListUiState.Error -> error(item.message)
+                TransactionListUiState.Loading -> Unit
+            }
         }
     }
 }

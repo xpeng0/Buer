@@ -1,0 +1,12 @@
+{
+  "kotlin.languageServer.enabled": true,
+  "kotlin.compiler.jvm.target": "11",
+  "kotlin.debugAdapter.enabled": true,
+  "kotlin.languageServer.path": "",
+  "kotlin.trace.server": "verbose",
+  "files.exclude": {
+    "**/.gradle": true,
+    "**/build": true
+  },
+  "java.configuration.updateBuildConfiguration": "automatic"
+}

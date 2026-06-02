@@ -1,0 +1,27 @@
+com.cscyxp.bookkeeping
+drawable bg_circle
+drawable bg_popup_categories
+drawable bg_tag_selector
+drawable ic_book
+drawable ic_bubble_tea
+drawable ic_coffee
+drawable ic_drink
+drawable ic_fitness
+drawable ic_food
+drawable ic_game
+drawable ic_haircut
+drawable ic_launcher_background
+drawable ic_launcher_foreground
+drawable ic_ledger
+drawable ic_medicine
+drawable ic_more
+drawable ic_pet
+drawable ic_phone
+drawable ic_shopping
+drawable ic_transport
+drawable ic_travel
+drawable round_add_24
+drawable round_home_24
+drawable rounded_bar_chart_24
+drawable wallet
+raw categories

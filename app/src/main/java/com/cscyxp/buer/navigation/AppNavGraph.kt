@@ -12,6 +12,8 @@ import com.cscyxp.bookkeeping.navigation.navigateToBookkeeping
 import com.cscyxp.buer.home.ui.BuerHomeScreen
 import com.cscyxp.finance.navigation.financeNavGraph
 import com.cscyxp.finance.navigation.navigateToFinance
+import com.cscyxp.fitness.navigation.fitnessNavGraph
+import com.cscyxp.fitness.navigation.navigateToFitness
 
 @Composable
 fun BuerApp() {
@@ -28,12 +30,15 @@ fun BuerApp() {
         composable<Home> {
             BuerHomeScreen(
                 onFinanceClick = { navController.navigateToFinance() },
-                onBookkeepingClick = { navController.navigateToBookkeeping() }
+                onBookkeepingClick = { navController.navigateToBookkeeping() },
+                onFitnessClick = { navController.navigateToFitness() }
             )
         }
 
         bookkeepingNavGraph(navController)
 
         financeNavGraph(navController)
+
+        fitnessNavGraph(navController)
     }
 }

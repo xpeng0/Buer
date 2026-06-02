@@ -1,0 +1,1 @@
+-keep,allowobfuscation,allowshrinking class com.cscyxp.fitness.workout.vm.ActiveWorkoutViewModel

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.cscyxp.bookkeeping.TransactionListViewModelTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-06-01T11:29:29" hostname="yakupdeMacBook-Air.local" time="0.288">
+  <properties/>
+  <testcase name="uiState - should emit loading before content()" classname="com.cscyxp.bookkeeping.TransactionListViewModelTest" time="0.195"/>
+  <testcase name="updateTransaction - should pass transaction to repository update correctly()" classname="com.cscyxp.bookkeeping.TransactionListViewModelTest" time="0.014"/>
+  <testcase name="uiState - should calculate sum correctly()" classname="com.cscyxp.bookkeeping.TransactionListViewModelTest" time="0.022"/>
+  <testcase name="set filter - should update uiState filter correctly()" classname="com.cscyxp.bookkeeping.TransactionListViewModelTest" time="0.018"/>
+  <testcase name="uiState - should pass filter to repository correctly()" classname="com.cscyxp.bookkeeping.TransactionListViewModelTest" time="0.02"/>
+  <testcase name="category dialog filter - should emit categories by type()" classname="com.cscyxp.bookkeeping.TransactionListViewModelTest" time="0.014"/>
+  <system-out><![CDATA[ Expect: Loading | Actual: Loading
+ Expect: 696905.12 | Actual: 696905.12
+ Expect: 739123.20 | Actual: 739123.20
+ Expect: -42218.08 | Actual: -42218.08
+ Expect: TransactionFilter(month=2, year=2026, category=null) | Actual: TransactionFilter(month=2, year=2026, category=null)
+ Expect: TransactionFilter(month=2, year=1111, category=null) | Actual: TransactionFilter(month=2, year=1111, category=null)
+ Expect: TransactionFilter(month=2, year=1111, category=Category(id=2, name=随机, type=0, icon=, parentId=null, sonCategories=[])) | Actual: TransactionFilter(month=2, year=1111, category=Category(id=2, name=随机, type=0, icon=, parentId=null, sonCategories=[]))
+ Expect: TransactionFilter(month=1, year=1111, category=Category(id=1, name=随机, type=0, icon=, parentId=null, sonCategories=[])) | Actual: TransactionFilter(month=1, year=1111, category=Category(id=1, name=随机, type=0, icon=, parentId=null, sonCategories=[]))
+ Expect: 1 | Actual: 1
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

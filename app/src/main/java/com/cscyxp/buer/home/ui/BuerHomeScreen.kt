@@ -33,6 +33,7 @@ data class MainCardData(
 data class ToolItem(
     val name: String,
     val hasNotification: Boolean = false,
+    val onClick: (() -> Unit)? = null,
     val icon: @Composable () -> Unit
 )
 
@@ -133,7 +134,12 @@ fun ToolGridCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.height(72.dp),
+        modifier = modifier
+            .height(72.dp)
+            .then(
+                if (item.onClick != null) Modifier.clickable { item.onClick.invoke() }
+                else Modifier
+            ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -222,7 +228,8 @@ fun SummaryDataColumn(label: String, value: String, valueColor: Color) {
 @Composable
 fun BuerHomeScreen(
     onFinanceClick: () -> Unit = {},
-    onBookkeepingClick: () -> Unit = {}
+    onBookkeepingClick: () -> Unit = {},
+    onFitnessClick: () -> Unit = {},
 ) {
     // 模拟主卡片高精度数据源
     val mainCards = listOf(
@@ -266,7 +273,7 @@ fun BuerHomeScreen(
         ToolItem("阅读", true) {
             CardIcon(backgroundColor = Color(0xFFF3E5F5)) { Icon(Icons.Default.Book, "", tint = Color(0xFF8E24AA)) }
         },
-        ToolItem("健身", true) {
+        ToolItem("健身", true, onClick = onFitnessClick) {
             CardIcon(backgroundColor = Color(0xFFFCE4EC)) { Icon(Icons.Default.FitnessCenter, "", tint = Color(0xFFD81B60)) }
         },
         ToolItem("日程", true) {

@@ -1,0 +1,6 @@
+-keep,allowobfuscation,allowshrinking class com.cscyxp.bookkeeping.vm.AddViewModel
+-keep,allowobfuscation,allowshrinking class com.cscyxp.bookkeeping.vm.AddViewModel
+-keep,allowobfuscation,allowshrinking class com.cscyxp.bookkeeping.vm.ChartViewModel
+-keep,allowobfuscation,allowshrinking class com.cscyxp.bookkeeping.vm.ChartViewModel
+-keep,allowobfuscation,allowshrinking class com.cscyxp.bookkeeping.vm.TransactionListViewModel
+-keep,allowobfuscation,allowshrinking class com.cscyxp.bookkeeping.vm.TransactionListViewModel

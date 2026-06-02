@@ -20,8 +20,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.cscyxp.bookkeeping.R
 import com.cscyxp.bookkeeping.domain.Category
 import com.cscyxp.bookkeeping.domain.DailyTransaction
-import com.cscyxp.bookkeeping.domain.HomeUiState
 import com.cscyxp.bookkeeping.domain.Transaction
+import com.cscyxp.bookkeeping.ui.state.TransactionListUiState
 import com.cscyxp.bookkeeping.util.format2f
 import com.cscyxp.bookkeeping.vm.TransactionListViewModel
 import java.time.LocalDate
@@ -34,46 +34,72 @@ internal fun TransactionListScreen(
     modifier: Modifier = Modifier,
     viewModel: TransactionListViewModel = hiltViewModel()
 ) {
-    val homeUiState by viewModel.homeUiState.collectAsState(initial = HomeUiState())
-    val topCategories by viewModel.topCategoriesByFilter.collectAsState(initial = emptyList())
-    val categoryFilterType by viewModel.categoryFilter.collectAsState(initial = Category.TYPE_EXPAND)
+    val uiState by viewModel.uiState.collectAsState()
     var showMonthPicker by remember { mutableStateOf(false) }
     var showCategoryPicker by remember { mutableStateOf(false) }
 
+    TransactionListScreen(
+        uiState = uiState,
+        showMonthPicker = showMonthPicker,
+        showCategoryPicker = showCategoryPicker,
+        onAddClick = onAddClick,
+        onMonthClick = { showMonthPicker = true },
+        onCategoryClick = { showCategoryPicker = true },
+        onMonthSelected = {
+            viewModel.setMonth(it)
+            showMonthPicker = false
+        },
+        onCategoryFilterTypeChange = viewModel::setCategoryDialogFilterType,
+        onCategorySelected = {
+            viewModel.setCategory(it)
+            showCategoryPicker = false
+        },
+        onDialogDismiss = {
+            showMonthPicker = false
+            showCategoryPicker = false
+        },
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun TransactionListScreen(
+    uiState: TransactionListUiState,
+    showMonthPicker: Boolean,
+    showCategoryPicker: Boolean,
+    onAddClick: () -> Unit,
+    onMonthClick: () -> Unit,
+    onCategoryClick: () -> Unit,
+    onMonthSelected: (Int) -> Unit,
+    onCategoryFilterTypeChange: (Int) -> Unit,
+    onCategorySelected: (Category) -> Unit,
+    onDialogDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Box(
         modifier = Modifier.fillMaxSize()
             .background(Color(0xFFF9FAFB))
             .then(modifier),
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize(),
-        ) {
-            item {
-                MonthInfoCard(
-                    month = viewModel.getMonth(),
-                    year = viewModel.getYear(),
-                    categoryName = viewModel.getCategory()?.name ?: "全部类型",
-                    expense = homeUiState.expenseSumStr,
-                    income = homeUiState.incomeSumStr,
-                    balance = homeUiState.balanceStr,
-                    onMonthClick = { showMonthPicker = true },
-                    onCategoryClick = { showCategoryPicker = true }
-                )
+        when (uiState) {
+            TransactionListUiState.Loading -> {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
 
-            item {
+            is TransactionListUiState.Error -> {
                 Text(
-                    text = "最近交易",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF111827),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                    text = uiState.message,
+                    color = Color(0xFFDC2626),
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
 
-            items(homeUiState.dailyTransactions, key = { it.date }) { daily ->
-                DailyTransactionCard(daily)
+            is TransactionListUiState.Content -> {
+                TransactionListContent(
+                    uiState = uiState,
+                    onMonthClick = onMonthClick,
+                    onCategoryClick = onCategoryClick
+                )
             }
         }
 
@@ -95,28 +121,61 @@ internal fun TransactionListScreen(
         }
     }
 
-    if (showMonthPicker) {
+    val contentState = uiState as? TransactionListUiState.Content
+    if (showMonthPicker && contentState != null) {
         MonthPickerDialog(
-            currentMonth = viewModel.getMonth(),
-            onConfirm = { month ->
-                viewModel.setMonth(month)
-                showMonthPicker = false
-            },
-            onDismiss = { showMonthPicker = false }
+            currentMonth = contentState.filter.month,
+            onConfirm = onMonthSelected,
+            onDismiss = onDialogDismiss
         )
     }
 
-    if (showCategoryPicker) {
+    if (showCategoryPicker && contentState != null) {
         CategoryPickerDialog(
-            categories = topCategories,
-            selectedType = categoryFilterType,
-            onTypeChange = { viewModel.setCategoryDialogFilterType(it) },
-            onCategorySelected = { category ->
-                viewModel.setCategory(category)
-                showCategoryPicker = false
-            },
-            onDismiss = { showCategoryPicker = false }
+            categories = contentState.topCategories,
+            selectedType = contentState.categoryDialogFilterType,
+            onTypeChange = onCategoryFilterTypeChange,
+            onCategorySelected = onCategorySelected,
+            onDismiss = onDialogDismiss
         )
+    }
+}
+
+@Composable
+private fun TransactionListContent(
+    uiState: TransactionListUiState.Content,
+    onMonthClick: () -> Unit,
+    onCategoryClick: () -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        item {
+            MonthInfoCard(
+                month = uiState.filter.month,
+                year = uiState.filter.year,
+                categoryName = uiState.filter.category?.name ?: "全部类型",
+                expense = uiState.expenseSumStr,
+                income = uiState.incomeSumStr,
+                balance = uiState.balanceStr,
+                onMonthClick = onMonthClick,
+                onCategoryClick = onCategoryClick
+            )
+        }
+
+        item {
+            Text(
+                text = "最近交易",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF111827),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+            )
+        }
+
+        items(uiState.dailyTransactions, key = { it.date }) { daily ->
+            DailyTransactionCard(daily)
+        }
     }
 }
 

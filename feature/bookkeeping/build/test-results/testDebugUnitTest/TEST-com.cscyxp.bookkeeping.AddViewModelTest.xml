@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.cscyxp.bookkeeping.AddViewModelTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-06-01T11:29:29" hostname="yakupdeMacBook-Air.local" time="0.409">
+  <properties/>
+  <testcase name="getCheckDate - should get checked date correctly()" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.229"/>
+  <testcase name="onSonCategoryClick - should emit state correctly()" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.033"/>
+  <testcase name="date - initial value should be null and emit correctly()" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.004"/>
+  <testcase name="handleKeyAction - should add category 0 when not select category()" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.064"/>
+  <testcase name="onTagClick - should emit state correctly()" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.005"/>
+  <testcase name="[1] 自动补0, [DOT, DIGIT_6, DIGIT_6], 0.66" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.006"/>
+  <testcase name="[2] 超过两位小数, [DIGIT_1, DOT, DIGIT_2, DIGIT_5, DIGIT_6, DIGIT_7, DIGIT_8, DIGIT_9], 1.25" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.002"/>
+  <testcase name="[3] 多个小数点, [DIGIT_1, DOT, DOT, DOT, DIGIT_5], 1.5" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.002"/>
+  <testcase name="[4] 多个小数点, [DIGIT_1, DOT, DIGIT_5, DOT, DIGIT_4, DOT, DIGIT_5], 1.54" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.002"/>
+  <testcase name="[5] 正常删除, [DIGIT_2, DIGIT_3, DELETE, DIGIT_4], 24" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.002"/>
+  <testcase name="[6] 前置删除, [DELETE, DELETE, DIGIT_2, DIGIT_6, DIGIT_4], 264" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.003"/>
+  <testcase name="handleKeyAction - should handle date key correctly()" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.003"/>
+  <testcase name="handleKeyAction - should handle ok key correctly()" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.006"/>
+  <testcase name="selectedCategoryState - initial value should be null()" classname="com.cscyxp.bookkeeping.AddViewModelTest" time="0.004"/>
+  <system-out><![CDATA[ Expect: 100 | Actual: 100
+ Expect: 1780243199999 | Actual: 1780243199999
+ Expect: 3 | Actual: 3
+ Expect: 5 | Actual: 5
+ Expect: Category(id=1, name=, type=0, icon=, parentId=null, sonCategories=[]) | Actual: Category(id=1, name=, type=0, icon=, parentId=null, sonCategories=[])
+ Expect: 3 | Actual: 3
+ Expect: 5 | Actual: 5
+ Expect: Category(id=2, name=, type=0, icon=, parentId=null, sonCategories=[]) | Actual: Category(id=2, name=, type=0, icon=, parentId=null, sonCategories=[])
+ Expect: null | Actual: null
+ Expect: 2026-05-31 | Actual: 2026-05-31
+ Expect: 1 | Actual: 1
+ Expect: 3 | Actual: 3
+ Expect: 5 | Actual: 5
+ Expect: Category(id=1, name=, type=0, icon=, parentId=null, sonCategories=[]) | Actual: Category(id=1, name=, type=0, icon=, parentId=null, sonCategories=[])
+ Expect: -1 | Actual: -1
+ Expect: -1 | Actual: -1
+ Expect: null | Actual: null
+handleKeyAction - should display input correctly: actions: [DOT, DIGIT_6, DIGIT_6]
+ Expect: 0.66 | Actual: 0.66
+handleKeyAction - should display input correctly: actions: [DIGIT_1, DOT, DIGIT_2, DIGIT_5, DIGIT_6, DIGIT_7, DIGIT_8, DIGIT_9]
+ Expect: 1.25 | Actual: 1.25
+handleKeyAction - should display input correctly: actions: [DIGIT_1, DOT, DOT, DOT, DIGIT_5]
+ Expect: 1.5 | Actual: 1.5
+handleKeyAction - should display input correctly: actions: [DIGIT_1, DOT, DIGIT_5, DOT, DIGIT_4, DOT, DIGIT_5]
+ Expect: 1.54 | Actual: 1.54
+handleKeyAction - should display input correctly: actions: [DIGIT_2, DIGIT_3, DELETE, DIGIT_4]
+ Expect: 24 | Actual: 24
+handleKeyAction - should display input correctly: actions: [DELETE, DELETE, DIGIT_2, DIGIT_6, DIGIT_4]
+ Expect: 264 | Actual: 264
+ Expect: 1 | Actual: 1
+ Expect: 1 | Actual: 1
+ Expect: -1 | Actual: -1
+ Expect: -1 | Actual: -1
+ Expect: null | Actual: null
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
